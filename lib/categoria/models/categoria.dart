@@ -38,7 +38,9 @@ class Categoria {
       'bebida': FontAwesomeIcons.glassWater,
       'pizza': FontAwesomeIcons.pizzaSlice,
       'sorvete': FontAwesomeIcons.iceCream,
-      'saudavel': FontAwesomeIcons.carrot,
+      'natural': FontAwesomeIcons.leaf,
+      'japonesa': FontAwesomeIcons.fish,
+      'regional': FontAwesomeIcons.pepperHot,
     };
     return iconMap[iconName];
   }
