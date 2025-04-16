@@ -18,38 +18,46 @@ class MenuPrincipalPage extends ConsumerStatefulWidget {
 }
 
 class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
-  late Future<List<Categoria>> listaCategorias;
-  List<Categoria> categoriasEmExibicao = [];
+  late Future<List<Categoria>> listaCategoriasFuture;
   List<Categoria> totalCategorias = [];
+  List<Categoria> categoriasEmExibicao = [];
   String textoPesquisa = '';
 
   @override
   void initState() {
     super.initState();
-    listaCategorias =
-        ref.read(categoriaRepositoryProvider).getCategoriasAtivas();
-    setState(() {
-      textoPesquisa = '';
-      categoriasEmExibicao = totalCategorias.take(5).toList();
-    });
+    listaCategoriasFuture = _carregarCategorias();
   }
 
-  void atualizarCategoriasEmExibicao(String textoPesquisa) {
+  Future<List<Categoria>> _carregarCategorias() async {
+    final categorias =
+        await ref.read(categoriaRepositoryProvider).getCategoriasAtivas();
+    totalCategorias = categorias;
+    categoriasEmExibicao = categorias.take(6).toList();
+    return categorias;
+  }
+
+  void atualizarCategoriasEmExibicao(String texto) {
+    textoPesquisa = texto;
+
     if (textoPesquisa.isEmpty) {
       setState(() {
-        categoriasEmExibicao = totalCategorias.take(10).toList();
+        categoriasEmExibicao = totalCategorias.take(6).toList();
       });
     } else {
-      final buscaFuzzy = Fuzzy(
-        totalCategorias.map((categoria) => categoria.nome).toList(),
-        options: FuzzyOptions(findAllMatches: true, threshold: 0.6),
+      final fuzzy = Fuzzy(
+        totalCategorias.map((c) => c.nome).toList(),
+        options: FuzzyOptions(
+          findAllMatches: false,
+          threshold: 0.3,
+          distance: 50,
+          minMatchCharLength: 2,
+        ),
       );
-      final listaFiltrada = buscaFuzzy.search(textoPesquisa);
 
-      final categoriasEncontradas = listaFiltrada
-          .map((resultado) => totalCategorias.firstWhere(
-                (categoria) => categoria.nome == resultado.item,
-              ))
+      final resultado = fuzzy.search(textoPesquisa);
+      final categoriasEncontradas = resultado
+          .map((r) => totalCategorias.firstWhere((c) => c.nome == r.item))
           .toList();
 
       setState(() {
@@ -62,78 +70,153 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: Tema.menuPrincipal(),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: FutureBuilder(
-            future: listaCategorias,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Text('Erro: ${snapshot.error}');
-              } else {
-                totalCategorias = snapshot.data!;
-                totalCategorias.sort((a, b) => a.nome.compareTo(b.nome));
-                if (categoriasEmExibicao.isEmpty) {
-                  categoriasEmExibicao = totalCategorias.take(5).toList();
-                }
-                return Column(
-                  children: [
-                    SearchBar(
-                      hintText: 'Pesquisar por categoria',
-                      leading: const Icon(Icons.search),
-                      onChanged: (texto) {
-                        setState(() {
-                          textoPesquisa = texto;
-                          atualizarCategoriasEmExibicao(texto);
-                        });
-                      },
-                      trailing: const [
-                        Tooltip(
-                          message: 'As primeiras 5 categorias são exibidas. \n'
-                              'Digite para pesquisar por outras categorias possíveis.',
-                          child: Icon(
-                            FontAwesomeIcons.circleQuestion,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: categoriasEmExibicao.length,
-                        itemBuilder: (context, index) {
-                          final categoria = categoriasEmExibicao[index];
-                          return cardLayout(categoria);
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-        ),
-      ),
       drawer: const MenuLateralWidget(),
-    );
-  }
-
-  Widget cardLayout(Categoria categoria) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: ListTile(
-        leading: categoria.icone != null ? Icon(categoria.icone) : null,
-        title: Text(categoria.nome),
-        subtitle: Text(categoria.descricao),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PesquisaEmpresaPage(categoria: categoria),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    cabecalho(),
+                    const SizedBox(height: 12),
+                    barraPesquisa(),
+                    const SizedBox(height: 12),
+                    gridCategoria(),
+                  ],
+                ),
+              ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget cabecalho() {
+    return const Column(
+      children: [
+        Text(
+          'Bem-vindo ao Pegue o Doce! \n Escolha uma categoria',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 4),
+        Text(
+          'Filtre e selecione uma categoria para visualizar mais detalhes.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget barraPesquisa() {
+    return SearchBar(
+      hintText: 'Pesquisar por categoria',
+      leading: const Icon(Icons.search),
+      onChanged: atualizarCategoriasEmExibicao,
+      trailing: const [
+        Tooltip(
+          message:
+              '6 categorias são exibidas por padrão.\nDigite para pesquisar por outras categorias possíveis.',
+          child: Icon(FontAwesomeIcons.circleQuestion),
+        ),
+      ],
+    );
+  }
+
+  Widget gridCategoria() {
+    return FutureBuilder<List<Categoria>>(
+      future: listaCategoriasFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return const Center(child: Text('Erro ao carregar categorias.'));
+        } else if (snapshot.hasData) {
+          if (categoriasEmExibicao.isEmpty) {
+            return const Center(child: Text('Nenhuma categoria encontrada.'));
+          }
+          return GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 300,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1,
+            ),
+            itemCount: categoriasEmExibicao.length,
+            itemBuilder: (context, index) {
+              return cardCategoria(categoriasEmExibicao[index]);
+            },
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget cardCategoria(Categoria categoria) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                if (categoria.icone != null) Icon(categoria.icone, size: 20),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    categoria.nome,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Text(
+                categoria.descricao,
+                style: const TextStyle(fontSize: 12),
+                softWrap: true,
+                maxLines: 4,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.lightGreen,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PesquisaEmpresaPage(categoria: categoria),
+                  ),
+                );
+              },
+              child: const Text('Selecionar'),
+            ),
+          ],
+        ),
       ),
     );
   }
