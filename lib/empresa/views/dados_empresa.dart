@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/empresa/controllers/dados_empresa_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/empresa/views/empresa_edit_page.dart';
+import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/pedido/views/historico_pedido_page.dart';
 import 'package:pegue_o_doce/produto/controllers/produto_list_controller.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
@@ -107,8 +108,9 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                           text: TextSpan(
                             children: [
                               const WidgetSpan(
-                                  child: Icon(FontAwesomeIcons.circleInfo)),
-                              const WidgetSpan(child: SizedBox(width: 8)),
+                                  child: Icon(FontAwesomeIcons.circleInfo,
+                                      color: Colors.blue)),
+                              const WidgetSpan(child: SizedBox(width: 10)),
                               TextSpan(
                                 text: empresa.descricao,
                                 style: const TextStyle(
@@ -119,6 +121,26 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      const Center(
+                        child: Row(
+                          children: [
+                            Icon(FontAwesomeIcons.locationDot,
+                                color: Colors.green),
+                            Text(
+                              'Locais de Entrega: ',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      for (var local in empresa.locaisEntrega)
+                        Chip(
+                          label: Text(local),
+                        ),
                       const SizedBox(height: 20),
                       Wrap(
                         children: [
@@ -178,6 +200,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
           ),
         ),
       ),
+      drawer: const MenuLateralWidget(),
     );
   }
 

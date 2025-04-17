@@ -5,6 +5,7 @@ import 'package:pegue_o_doce/empresa/controllers/empresa_edit_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
 import 'package:pegue_o_doce/usuario/services/usuario_service.dart';
+import 'package:pegue_o_doce/utils/snackbar_util.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 import 'package:pegue_o_doce/utils/validador.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
@@ -57,7 +58,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Incluir/Editar Empresa', []),
+      appBar: Tema.descricaoAcoes('Incluir Empresa', []),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Center(
@@ -165,7 +166,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                         'Ex: PAF II, Instituto de Biologia, Faculdade de Educação',
                     helperMaxLines: 2,
                     suffixIcon: IconButton(
-                      icon: const Icon(FontAwesomeIcons.circleCheck),
+                      icon: const Icon(FontAwesomeIcons.plus),
                       tooltip: 'Adicionar local de entrega',
                       onPressed: () {
                         final local = _locaisEntregaController.text.trim();
@@ -208,6 +209,15 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
+                      if (_locaisEntrega.isEmpty) {
+                        SnackBarUtil.showSnackbar(
+                            mensagem:
+                                'Selecione pelo menos um local de entrega',
+                            context: context,
+                            erro: true);
+                        return;
+                      }
+
                       final usuarioLogado = await ref
                           .read(usuarioServiceProvider)
                           .obterUsuarioLogado();

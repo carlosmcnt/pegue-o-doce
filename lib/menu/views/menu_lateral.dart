@@ -70,16 +70,16 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
             leading: const Icon(FontAwesomeIcons.house),
             title: const Text("Início"),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (context) => const MenuPrincipalPage(),
               ));
             },
           ),
           ListTile(
             leading: const Icon(FontAwesomeIcons.gear),
-            title: const Text("Minhas configurações"),
+            title: const Text("Minhas Configurações"),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (context) => ConfiguracaoPage(
                         usuario: Usuario(
                           nomeCompleto: usuario!.nomeCompleto,
@@ -106,7 +106,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
                   leading: const Icon(FontAwesomeIcons.building),
                   title: const Text("Perfil Empresa"),
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (context) =>
                           DadosEmpresaPage(empresa: snapshot.data!),
                     ));
@@ -117,7 +117,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
           ),
           ListTile(
             leading: const Icon(FontAwesomeIcons.clockRotateLeft),
-            title: const Text("Histórico de pedidos"),
+            title: const Text("Histórico de Pedidos"),
             onTap: () {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
@@ -129,7 +129,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
           ),
           ListTile(
             leading: const Icon(FontAwesomeIcons.heartPulse),
-            title: const Text("Empresas favoritas"),
+            title: const Text("Empresas Favoritas"),
             onTap: () {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
@@ -142,7 +142,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
             leading: const Icon(FontAwesomeIcons.cartShopping),
             title: const Text("Carrinho"),
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const CarrinhoPage(),
                 ),

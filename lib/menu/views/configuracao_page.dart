@@ -6,6 +6,7 @@ import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
 import 'package:pegue_o_doce/empresa/views/empresa_edit_page.dart';
 import 'package:pegue_o_doce/menu/controllers/menu_lateral_controller.dart';
+import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/menu/controllers/dados_usuario_controller.dart';
 import 'package:pegue_o_doce/usuario/views/menu_principal_page.dart';
@@ -52,28 +53,13 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Minhas configurações', []),
+      appBar: Tema.descricaoAcoes('Configurações', []),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(20),
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
-              const Card(
-                  child: Padding(
-                padding: EdgeInsets.all(12.0),
-                child: SizedBox(
-                  child: Text(
-                    'Visualize e altere seus dados pessoais',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )),
-              const SizedBox(height: 16),
               ListView(
                 shrinkWrap: true,
                 children: [
@@ -216,6 +202,7 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
           ),
         ),
       ),
+      drawer: const MenuLateralWidget(),
     );
   }
 
@@ -232,7 +219,7 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) => EmpresaEditPage(
-                  empresa: Empresa.empty(usuario.value!.id!),
+                  empresa: Empresa.empty(usuario.valueOrNull?.id ?? ''),
                 ),
               ),
             );
