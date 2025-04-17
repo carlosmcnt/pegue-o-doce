@@ -109,7 +109,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                             children: [
                               const WidgetSpan(
                                   child: Icon(FontAwesomeIcons.circleInfo,
-                                      color: Colors.blue)),
+                                      color: Colors.blue, size: 20)),
                               const WidgetSpan(child: SizedBox(width: 10)),
                               TextSpan(
                                 text: empresa.descricao,
@@ -121,14 +121,16 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
                       const Center(
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(FontAwesomeIcons.locationDot,
-                                color: Colors.green),
+                                color: Colors.deepPurple),
                             Text(
                               'Locais de Entrega: ',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -137,10 +139,12 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                           ],
                         ),
                       ),
-                      for (var local in empresa.locaisEntrega)
-                        Chip(
+                      const SizedBox(height: 10),
+                      ...empresa.locaisEntrega.map(
+                        (local) => Chip(
                           label: Text(local),
                         ),
+                      ),
                       const SizedBox(height: 20),
                       Wrap(
                         children: [
@@ -149,22 +153,25 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                               icon: FontAwesomeIcons.circlePlus,
                               label: 'Adicionar Produto',
                               onPressed: abrirPaginaIncluirEditarProduto,
+                              color: Colors.green,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 15, width: 10),
                           Container(
                             child: botaoAcaoEmpresa(
                               icon: FontAwesomeIcons.penToSquare,
                               label: 'Alterar Empresa',
                               onPressed: abrirPaginaEditarEmpresa,
+                              color: Colors.orange,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 15, width: 10),
                           Container(
                             child: botaoAcaoEmpresa(
                               icon: FontAwesomeIcons.clockRotateLeft,
                               label: 'Histórico de Vendas',
                               onPressed: abrirPaginaHistoricoPedido,
+                              color: Colors.purple,
                             ),
                           ),
                         ],
@@ -208,10 +215,12 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
+    required Color color,
   }) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         minimumSize: const Size(200, 50),
+        backgroundColor: color,
       ),
       icon: Icon(icon),
       label: Text(label),

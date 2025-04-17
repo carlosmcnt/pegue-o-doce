@@ -5,10 +5,12 @@ import 'package:pegue_o_doce/empresa/controllers/dados_empresa_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/pedido/views/encomenda_page.dart';
 import 'package:pegue_o_doce/pedido/views/pedido_page.dart';
+import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/usuario/models/usuario_empresa.dart';
 import 'package:pegue_o_doce/usuario/repositories/usuario_empresa_repository.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VisualizacaoEmpresaPage extends ConsumerStatefulWidget {
   final Empresa empresa;
@@ -24,10 +26,24 @@ class VisualizacaoEmpresaPage extends ConsumerStatefulWidget {
 class VisualizacaoEmpresaPageState
     extends ConsumerState<VisualizacaoEmpresaPage> {
   Empresa get empresa => widget.empresa;
+  String? telefoneContato;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final listaProdutos = ref.watch(dadosEmpresaControllerProvider);
+    ref
+        .read(dadosEmpresaControllerProvider.notifier)
+        .obterTelefoneContatoPorIdEmpresa(empresa.usuarioId)
+        .then((telefone) {
+      setState(() {
+        telefoneContato = telefone;
+      });
+    });
 
     return Scaffold(
       appBar: Tema.descricaoAcoes('Visualizar Empresa', []),
@@ -42,17 +58,13 @@ class VisualizacaoEmpresaPageState
                 child: Text(
                   empresa.nomeFantasia,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(child: Text(empresa.descricao)),
-                ],
-              ),
+              Text(empresa.descricao, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
@@ -93,6 +105,15 @@ class VisualizacaoEmpresaPageState
                       },
                       icon: const Icon(FontAwesomeIcons.star),
                       label: const Text("Favoritar Empresa")),
+                  ElevatedButton.icon(
+                      onPressed: () {
+                        launchUrl(
+                          Uri.parse(
+                              "https://wa.me/$telefoneContato?text=Olá, gostaria de mais informações sobre seus produtos."),
+                        );
+                      },
+                      icon: const Icon(FontAwesomeIcons.whatsapp),
+                      label: const Text("Entrar em contato")),
                 ],
               ),
               const SizedBox(height: 16),
@@ -108,7 +129,6 @@ class VisualizacaoEmpresaPageState
               ),
               const SizedBox(height: 8),
               Wrap(
-                spacing: 8,
                 children: listaProdutos.when(
                   data: (produtos) => produtos
                       .map((produto) => ListTile(
@@ -117,6 +137,13 @@ class VisualizacaoEmpresaPageState
                                 FormatadorMoedaReal.formatarValorReal(
                                     produto.valorUnitario)),
                             leading: const Icon(FontAwesomeIcons.circleInfo),
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    exibirDadosProduto(produto),
+                              );
+                            },
                           ))
                       .toList(),
                   loading: () => const [CircularProgressIndicator()],
@@ -201,6 +228,68 @@ class VisualizacaoEmpresaPageState
             Navigator.of(context).pop();
           },
           child: const Text("Confirmar"),
+        ),
+      ],
+    );
+  }
+
+  AlertDialog exibirDadosProduto(Produto produto) {
+    return AlertDialog(
+      title: const Text('Outros detalhes do produto'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Sabor:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )),
+          Text(produto.sabor, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          const Text('Lista de alérgenos:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )),
+          const SizedBox(height: 8),
+          ...produto.alergenos.map(
+            (alergeno) => Text(
+              alergeno,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text('Vegano: ',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )),
+          Text(produto.vegano ? "Sim" : "Não",
+              style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          const Text('Sem Glúten: ',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )),
+          Text(produto.temGlutem ? "Sim" : "Não",
+              style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          const Text('Sem Lactose: ',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )),
+          Text(produto.temLactose ? "Sim" : "Não",
+              style: const TextStyle(fontSize: 16)),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Fechar"),
         ),
       ],
     );

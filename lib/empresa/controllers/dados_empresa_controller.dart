@@ -45,4 +45,10 @@ class DadosEmpresaController extends _$DadosEmpresaController {
     String? id = await ref.read(usuarioServiceProvider).obterIdUsuarioLogado();
     return id;
   }
+
+  Future<String> obterTelefoneContatoPorIdEmpresa(String idUsuario) async {
+    final usuario =
+        await ref.read(usuarioServiceProvider).obterUsuarioPorId(idUsuario);
+    return usuario.telefone;
+  }
 }
