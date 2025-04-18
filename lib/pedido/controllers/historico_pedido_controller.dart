@@ -1,3 +1,4 @@
+import 'package:pegue_o_doce/empresa/services/empresa_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/services/pedido_service.dart';
@@ -52,5 +53,25 @@ class HistoricoPedidoController extends _$HistoricoPedidoController {
       'descricao': '${produto?.tipo} sabor ${produto?.sabor}',
       'preco': produto?.valorUnitario,
     };
+  }
+
+  Future<String> obterNomeClienteOuEmpresa(
+      String pedidoId, bool isHistoricoEmpresa) async {
+    if (isHistoricoEmpresa) {
+      final pedido =
+          await ref.read(pedidoServiceProvider).getPedidoPorId(pedidoId);
+      String idCliente = pedido?.usuarioClienteId ?? '';
+      final cliente =
+          await ref.read(usuarioServiceProvider).obterUsuarioPorId(idCliente);
+      return cliente.nomeCompleto;
+    } else {
+      final pedido =
+          await ref.read(pedidoServiceProvider).getPedidoPorId(pedidoId);
+      String idVendedor = pedido?.usuarioVendedorId ?? '';
+      final vendedor = await ref
+          .read(empresaServiceProvider)
+          .obterEmpresaPorUsuarioId(idVendedor);
+      return vendedor!.nomeFantasia;
+    }
   }
 }

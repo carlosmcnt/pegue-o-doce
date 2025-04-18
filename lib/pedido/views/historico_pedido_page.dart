@@ -45,8 +45,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
 
     final pedidosAsync =
         ref.watch(historicoPedidoControllerProvider(widget.isHistoricoEmpresa));
-
-    List<Pedido> listaPedidos = _aplicarFiltros(pedidosAsync);
+    List<Pedido> listaPedidos = aplicarFiltros(pedidosAsync);
 
     return Scaffold(
       appBar: Tema.descricaoAcoes(
@@ -56,14 +55,12 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
       drawer: const MenuLateralWidget(),
       body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (widget.isHistoricoEmpresa) exibirPainelVendedor(pedidosAsync),
             exibirPaginacaoOrdenacao(),
             const Divider(),
             Center(
-              heightFactor: 8,
               child: pedidosAsync.when(
                 data: (lista) {
                   if (lista.isEmpty) {
@@ -98,7 +95,25 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
                               ),
                             ),
                             const SizedBox(height: 5),
-                            exibirCardPedido(pedido),
+                            FutureBuilder<String>(
+                              future: ref
+                                  .read(historicoPedidoControllerProvider(
+                                          widget.isHistoricoEmpresa)
+                                      .notifier)
+                                  .obterNomeClienteOuEmpresa(
+                                      pedido.id!, widget.isHistoricoEmpresa),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (snapshot.hasData) {
+                                  return exibirCardPedido(
+                                      pedido, snapshot.data!);
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              },
+                            ),
                           ],
                         ),
                       );
@@ -187,14 +202,13 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     );
   }
 
-  Widget exibirCardPedido(Pedido pedido) {
+  Widget exibirCardPedido(Pedido pedido, String nomePessoa) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cabeçalho com código do pedido
             Row(
               children: [
                 const Icon(FontAwesomeIcons.hashtag, color: Colors.black54),
@@ -239,7 +253,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 TextButton(
-                  onPressed: () => detalharPedido(pedido),
+                  onPressed: () => detalharPedido(pedido, nomePessoa),
                   child: const Text("Detalhes",
                       style: TextStyle(color: Colors.purple)),
                 ),
@@ -257,7 +271,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     );
   }
 
-  List<Pedido> _aplicarFiltros(AsyncValue<List<Pedido>> pedidosAsync) {
+  List<Pedido> aplicarFiltros(AsyncValue<List<Pedido>> pedidosAsync) {
     pedidosAsync.whenData((pedidos) {
       listaPedidosFinal = statusSelecionado == "Todos"
           ? pedidos
@@ -304,7 +318,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     );
   }
 
-  Widget exibirDadosItemPedido(ItemPedido item) {
+  Widget exibirDadosItemPedido(ItemPedido item, Pedido pedido) {
     return FutureBuilder<Map<String, dynamic>>(
       future: ref
           .read(historicoPedidoControllerProvider(widget.isHistoricoEmpresa)
@@ -317,8 +331,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
           return Text("Erro: ${snapshot.error}");
         } else if (snapshot.hasData) {
           final dados = snapshot.data!;
-          return Row(
-            mainAxisSize: MainAxisSize.min,
+          return Wrap(
             children: [
               Text("${dados['descricao']}"),
               const SizedBox(width: 8),
@@ -389,7 +402,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     );
   }
 
-  void detalharPedido(Pedido pedido) {
+  void detalharPedido(Pedido pedido, String nomePessoa) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -398,13 +411,17 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(widget.isHistoricoEmpresa
+                  ? "Cliente: $nomePessoa"
+                  : "Vendedor: $nomePessoa"),
+              const SizedBox(height: 8),
               Text("Observação: ${pedido.observacao}"),
               const SizedBox(height: 8),
               const Text("Itens do pedido:"),
               for (var item in pedido.itensPedido)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: exibirDadosItemPedido(item),
+                  child: exibirDadosItemPedido(item, pedido),
                 ),
               const SizedBox(height: 8),
               if (pedido.motivoCancelamento != null &&
