@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/categoria/models/categoria.dart';
+import 'package:pegue_o_doce/empresa/controllers/dados_empresa_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/produto/controllers/produto_list_controller.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
@@ -332,6 +333,7 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
                       .inserirOuAtualizarProduto(novoProduto);
 
                   ref.invalidate(produtoListControllerProvider);
+                  ref.invalidate(dadosEmpresaControllerProvider);
 
                   if (context.mounted) {
                     Navigator.of(context).pop(true);
