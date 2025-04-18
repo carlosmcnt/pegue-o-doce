@@ -31,6 +31,18 @@ class Usuario {
     );
   }
 
+  factory Usuario.fromDocument(DocumentSnapshot doc) {
+    return Usuario(
+      id: doc.id,
+      nomeCompleto: doc['nomeCompleto'],
+      email: doc['email'],
+      cpf: doc['cpf'],
+      telefone: doc['telefone'],
+      dataCadastro: doc['dataCadastro'],
+      dataUltimaAlteracao: doc['dataUltimaAlteracao'],
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'nomeCompleto': nomeCompleto,

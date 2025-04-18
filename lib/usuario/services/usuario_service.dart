@@ -97,6 +97,10 @@ class UsuarioService {
   Future<void> atualizarUsuario(Usuario usuario) async {
     await usuarioRepository.atualizarUsuario(usuario);
   }
+
+  Future<Usuario> obterUsuarioPorId(String usuarioId) async {
+    return await usuarioRepository.obterUsuarioPorId(usuarioId);
+  }
 }
 
 @Riverpod(keepAlive: true)

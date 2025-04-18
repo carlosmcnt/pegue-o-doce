@@ -118,6 +118,15 @@ class UsuarioRepository {
       });
     }
   }
+
+  Future<Usuario> obterUsuarioPorId(String usuarioId) async {
+    final doc = await _firestore.collection('usuarios').doc(usuarioId).get();
+    if (doc.exists) {
+      return Usuario.fromDocument(doc);
+    } else {
+      throw FirebaseAuthException(code: 'user-not-found');
+    }
+  }
 }
 
 @riverpod
