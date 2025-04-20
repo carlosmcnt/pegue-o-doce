@@ -1,3 +1,4 @@
+import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pegue_o_doce/empresa/services/empresa_service.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
@@ -76,11 +77,18 @@ class EncomendaController extends _$EncomendaController {
     }
   }
 
-  Future<String> obterEmpresaPorIdProduto(String produtoId) async {
+  Future<Empresa> obterEmpresaPorIdProduto(String produtoId) async {
     final produto =
         await ref.read(produtoServiceProvider).getProdutoById(produtoId);
     if (produto != null) {
-      return produto.empresaId;
+      final empresa = await ref
+          .read(empresaServiceProvider)
+          .obterEmpresaPorId(produto.empresaId);
+      if (empresa != null) {
+        return empresa;
+      } else {
+        throw Exception('Empresa não encontrada');
+      }
     } else {
       throw Exception('Produto não encontrado');
     }

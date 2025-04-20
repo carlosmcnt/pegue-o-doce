@@ -33,6 +33,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
   String? tipoSelecionado;
   List<Produto> produtos = [];
   List<ItemPedido> itensSelecionados = [];
+  String? localEntregaSelecionado;
 
   Future<void> selecionarArquivo() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -229,6 +230,31 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                             child: Text("Arquivo: ${arquivoSelecionado!.name}"),
                           ),
                         ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    children: [
+                      const Text('Selecione um local de entrega:',
+                          style: TextStyle(
+                            fontSize: 16,
+                          )),
+                      const SizedBox(width: 16),
+                      DropdownMenu<String>(
+                        initialSelection: null,
+                        onSelected: (String? novoTipo) {
+                          setState(() {
+                            localEntregaSelecionado = novoTipo;
+                          });
+                        },
+                        dropdownMenuEntries: empresa.locaisEntrega
+                            .map((local) => DropdownMenuEntry<String>(
+                                  value: local,
+                                  label: local,
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(width: 16),
                     ],
                   ),
                   const SizedBox(height: 16),

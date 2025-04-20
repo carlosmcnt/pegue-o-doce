@@ -113,7 +113,7 @@ class Tema {
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: accentColor,
-        selectionColor: accentColor.withOpacity(0.5),
+        selectionColor: accentColor.withValues(),
         selectionHandleColor: accentColor,
       ),
       textButtonTheme: TextButtonThemeData(
