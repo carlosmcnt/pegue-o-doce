@@ -3,7 +3,6 @@ import 'package:flutter_cart/cart.dart';
 import 'package:flutter_cart/model/cart_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
@@ -164,7 +163,7 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "Total: R\$ ${NumberFormat.currency(locale: 'pt_BR', symbol: '').format(obterPrecoTotal(itensSelecionados))}",
+                    "Total: ${FormatadorMoedaReal.formatarValorReal(obterPrecoTotal(itensSelecionados))}",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold),
@@ -181,21 +180,37 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                           if (_formKey.currentState!.validate()) {
                             if (itensSelecionados.isNotEmpty) {
                               for (var item in itensSelecionados) {
-                                carrinho.addToCart(
-                                  cartModel: CartModel(
-                                    productId: item.produtoId!,
-                                    productName: produtos
-                                        .firstWhere(
-                                            (p) => p.id == item.produtoId)
-                                        .sabor,
-                                    quantity: item.quantidade,
-                                    variants: [],
-                                    productDetails: produtos
-                                        .firstWhere(
-                                            (p) => p.id == item.produtoId)
-                                        .empresaId,
-                                  ),
-                                );
+                                if (carrinho.cartItemsList.isNotEmpty) {
+                                  if (carrinho
+                                          .cartItemsList.first.productDetails !=
+                                      empresa.id) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return dialogLimparCarrinho(context);
+                                        });
+                                  }
+                                } else {
+                                  carrinho.addToCart(
+                                    cartModel: CartModel(
+                                      productId: item.produtoId!,
+                                      productName: produtos
+                                          .firstWhere(
+                                              (p) => p.id == item.produtoId)
+                                          .sabor,
+                                      quantity: item.quantidade,
+                                      variants: [],
+                                      productDetails: produtos
+                                          .firstWhere(
+                                              (p) => p.id == item.produtoId)
+                                          .empresaId,
+                                      productMeta: {
+                                        'observacao':
+                                            _observacaoController.text,
+                                      },
+                                    ),
+                                  );
+                                }
                               }
 
                               Navigator.of(context).push(
@@ -225,6 +240,37 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
           ),
         ),
       ),
+    );
+  }
+
+  AlertDialog dialogLimparCarrinho(BuildContext context) {
+    return AlertDialog(
+      title: const Icon(FontAwesomeIcons.trash, color: Colors.grey, size: 50),
+      content: const Text(
+          'O carrinho já possui produtos de outra empresa. Deseja realmente limpar o carrinho?'),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Cancelar"),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+          ),
+          onPressed: () {
+            carrinho.clearCart();
+            Navigator.of(context).pop();
+          },
+          child: const Text("Limpar"),
+        ),
+      ],
     );
   }
 

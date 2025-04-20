@@ -29,6 +29,7 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
   late TextEditingController _tipoController;
   late TextEditingController _saborController;
   late TextEditingController _alergenosController;
+  final ValueNotifier<double> _valorNotifier = ValueNotifier<double>(0.0);
   late String _categoria = '';
   List<String> _alergenos = [];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -56,8 +57,15 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
     super.initState();
     carregarCategoria();
     _descricaoController = TextEditingController(text: produto.descricao);
-    _valorController =
-        TextEditingController(text: produto.valorUnitario.toString());
+    _valorController = TextEditingController();
+    FormatadorMoedaReal.bloquearFormatacaoTemporariamente(() {
+      final valor = produto.valorUnitario;
+      final formatado = FormatadorMoedaReal.formatarValorReal(valor);
+      _valorController.text = formatado;
+      _valorController.selection =
+          TextSelection.collapsed(offset: formatado.length);
+    });
+    _valorNotifier.value = produto.valorUnitario;
     _tipoController = TextEditingController(text: produto.tipo);
     _saborController = TextEditingController(text: produto.sabor);
     _alergenosController = TextEditingController();
@@ -115,13 +123,12 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
                   labelText: 'Valor Unitário:',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  prefixText: 'R\$ ',
                   prefixIcon: const Icon(FontAwesomeIcons.moneyBillWave),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  FormatadorMoedaReal(),
+                  FormatadorMoedaReal(valorNotifier: _valorNotifier),
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
