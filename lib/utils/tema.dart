@@ -189,7 +189,7 @@ class Tema {
       toolbarHeight: const Size.fromHeight(70).height,
       centerTitle: true,
       title: Image.asset(
-        'logo.png',
+        "assets/images/logo.png",
         fit: BoxFit.cover,
         height: 90,
       ),

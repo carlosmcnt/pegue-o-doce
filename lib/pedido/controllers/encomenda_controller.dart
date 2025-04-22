@@ -1,4 +1,5 @@
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
+import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pegue_o_doce/empresa/services/empresa_service.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
@@ -55,6 +56,12 @@ class EncomendaController extends _$EncomendaController {
   Future<String> obterIdUsuarioLogado() async {
     final usuario = await ref.read(usuarioServiceProvider).obterUsuarioLogado();
     return usuario.id!;
+  }
+
+  Future<Usuario> obterUsuarioPorId(String id) async {
+    final usuario =
+        await ref.read(usuarioServiceProvider).obterUsuarioPorId(id);
+    return usuario;
   }
 
   Future<List<Produto>> obterProdutosPorIds(List<String> ids) async {

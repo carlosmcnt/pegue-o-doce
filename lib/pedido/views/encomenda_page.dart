@@ -9,6 +9,7 @@ import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
+import 'package:pegue_o_doce/utils/email_util.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 import 'package:file_picker/file_picker.dart';
@@ -80,6 +81,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
   Future<void> enviarEncomenda(
       List<ItemPedido> itens, BuildContext context) async {
     if (!_formKey.currentState!.validate()) {
+      Navigator.pop(context);
       return;
     }
 
@@ -89,6 +91,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
           content: Text('Selecione um arquivo de comprovante de pagamento'),
         ),
       );
+      Navigator.pop(context);
       return;
     }
 
@@ -111,7 +114,13 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
     if (!context.mounted) return;
 
-    Navigator.of(context).pop();
+    await EmailUtil.enviarEmailEncomenda(
+      context,
+      localEntregaSelecionado!,
+      pedido,
+      produtos,
+      ref,
+    );
   }
 
   @override
