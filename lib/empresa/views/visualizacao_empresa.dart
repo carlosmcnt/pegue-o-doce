@@ -49,133 +49,198 @@ class VisualizacaoEmpresaPageState
       appBar: Tema.descricaoAcoes('Visualizar Empresa', []),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                width: double.infinity,
-                child: Text(
-                  empresa.nomeFantasia,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Text(empresa.descricao, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => PedidoPage(
-                            empresa: empresa,
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(FontAwesomeIcons.cartShopping),
-                    label: const Text("Realizar Pedido"),
-                  ),
-                  ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => EncomendaPage(
-                              empresa: empresa,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(FontAwesomeIcons.box),
-                      label: const Text("Encomendar")),
-                  ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) =>
-                              dialogoFavoritarEmpresa(context),
-                        );
-                      },
-                      icon: const Icon(FontAwesomeIcons.star),
-                      label: const Text("Favoritar Empresa")),
-                  ElevatedButton.icon(
-                      onPressed: () {
-                        launchUrl(
-                          Uri.parse(
-                              "https://wa.me/$telefoneContato?text=Olá, gostaria de mais informações sobre seus produtos."),
-                        );
-                      },
-                      icon: const Icon(FontAwesomeIcons.whatsapp),
-                      label: const Text("Entrar em contato")),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                children: [
-                  Icon(FontAwesomeIcons.clipboardCheck),
-                  SizedBox(width: 10),
-                  Text(
-                    "Produtos:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                children: listaProdutos.when(
-                  data: (produtos) => produtos
-                      .map((produto) => ListTile(
-                            title: Text(produto.descricao),
-                            subtitle: Text(
-                                FormatadorMoedaReal.formatarValorReal(
-                                    produto.valorUnitario)),
-                            leading: const Icon(FontAwesomeIcons.circleInfo),
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    exibirDadosProduto(produto),
-                              );
-                            },
-                          ))
-                      .toList(),
-                  loading: () => const [CircularProgressIndicator()],
-                  error: (e, stack) => [Text("Erro: $e")],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                children: [
-                  Icon(FontAwesomeIcons.mapLocationDot),
-                  SizedBox(width: 10),
-                  Text(
-                    "Local (is) de entrega:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                alignment: WrapAlignment.start,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 10,
-                children: empresa.locaisEntrega
-                    .map((local) => Chip(
-                        label: Text(local),
-                        avatar: const Icon(FontAwesomeIcons.locationArrow)))
-                    .toList(),
-              ),
+              cabecalho(),
+              const SizedBox(height: 24),
+              secaoAcoes(context),
+              const SizedBox(height: 24),
+              const Divider(),
+              secaoProdutos(context, listaProdutos),
+              const SizedBox(height: 24),
+              const Divider(),
+              secaoLocaisEntrega(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget cabecalho() {
+    return Column(
+      children: [
+        Text(
+          empresa.nomeFantasia,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          empresa.descricao,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+      ],
+    );
+  }
+
+  Widget secaoAcoes(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: MediaQuery.of(context).size.width /
+          (MediaQuery.of(context).size.height / 5),
+      children: [
+        botaoAcao(
+          label: "Pedido",
+          icon: FontAwesomeIcons.cartShopping,
+          color: Colors.teal[600],
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PedidoPage(empresa: empresa),
+              ),
+            );
+          },
+        ),
+        botaoAcao(
+          label: "Encomenda",
+          icon: FontAwesomeIcons.box,
+          color: Colors.orange[600],
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EncomendaPage(empresa: empresa),
+              ),
+            );
+          },
+        ),
+        botaoAcao(
+          label: "Favoritar",
+          icon: FontAwesomeIcons.star,
+          color: Colors.red[600],
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => dialogoFavoritarEmpresa(context),
+            );
+          },
+        ),
+        botaoAcao(
+          label: "Contato",
+          icon: FontAwesomeIcons.whatsapp,
+          color: Colors.green[600],
+          onPressed: () {
+            launchUrl(
+              Uri.parse(
+                  "https://wa.me/55$telefoneContato?text=Olá, gostaria de mais informações sobre seus produtos."),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget botaoAcao({
+    required String label,
+    required IconData icon,
+    required Color? color,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(backgroundColor: color),
+    );
+  }
+
+  Widget secaoProdutos(
+      BuildContext context, AsyncValue<List<Produto>> listaProdutos) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(FontAwesomeIcons.utensils),
+            SizedBox(width: 10),
+            Text(
+              "Produtos",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        listaProdutos.when(
+          data: (produtos) => Column(
+            children: produtos.map((produto) {
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: const Icon(FontAwesomeIcons.utensils,
+                      color: Colors.deepOrange),
+                  title: Text(produto.descricao),
+                  subtitle: Text(
+                    FormatadorMoedaReal.formatarValorReal(
+                        produto.valorUnitario),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) =>
+                          dialogoExibirDadosProduto(context, produto),
+                    );
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(child: Text('Erro: $error')),
+        ),
+      ],
+    );
+  }
+
+  Widget secaoLocaisEntrega() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(FontAwesomeIcons.mapLocationDot),
+            SizedBox(width: 10),
+            Text(
+              "Locais de entrega",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: empresa.locaisEntrega.map((local) {
+            return Chip(
+              avatar: const Icon(FontAwesomeIcons.locationDot, size: 16),
+              label: Text(local),
+              backgroundColor: Colors.blue[50],
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -186,9 +251,7 @@ class VisualizacaoEmpresaPageState
       content: const Text("Deseja favoritar esta empresa?"),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.pop(context),
           child: const Text("Cancelar"),
         ),
         TextButton(
@@ -233,65 +296,49 @@ class VisualizacaoEmpresaPageState
     );
   }
 
-  AlertDialog exibirDadosProduto(Produto produto) {
+  AlertDialog dialogoExibirDadosProduto(BuildContext context, Produto produto) {
     return AlertDialog(
-      title: const Text('Outros detalhes do produto'),
+      title: const Text('Detalhes do produto'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Sabor:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              )),
-          Text(produto.sabor, style: const TextStyle(fontSize: 16)),
+          padronizarTexto('Sabor', produto.sabor),
+          padronizarTexto('Vegano', produto.vegano ? 'Sim' : 'Não'),
+          padronizarTexto('Contém Glúten', produto.temGlutem ? 'Sim' : 'Não'),
+          padronizarTexto('Contém Lactose', produto.temLactose ? 'Sim' : 'Não'),
           const SizedBox(height: 8),
-          const Text('Lista de alérgenos:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              )),
-          const SizedBox(height: 8),
-          ...produto.alergenos.map(
-            (alergeno) => Text(
-              alergeno,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text('Vegano: ',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              )),
-          Text(produto.vegano ? "Sim" : "Não",
-              style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 8),
-          const Text('Sem Glúten: ',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              )),
-          Text(produto.temGlutem ? "Sim" : "Não",
-              style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 8),
-          const Text('Sem Lactose: ',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              )),
-          Text(produto.temLactose ? "Sim" : "Não",
-              style: const TextStyle(fontSize: 16)),
+          const Text('Alérgenos:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ...produto.alergenos.map((a) => Text('- $a')),
         ],
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.pop(context),
           child: const Text("Fechar"),
         ),
       ],
+    );
+  }
+
+  Widget padronizarTexto(String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: RichText(
+        text: TextSpan(
+          text: '$titulo: ',
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+          children: [
+            TextSpan(
+              text: valor,
+              style: const TextStyle(
+                  fontWeight: FontWeight.normal, color: Colors.black87),
+            )
+          ],
+        ),
+      ),
     );
   }
 }

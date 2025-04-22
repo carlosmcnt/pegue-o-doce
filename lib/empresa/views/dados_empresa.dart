@@ -83,128 +83,151 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
   Widget build(BuildContext context) {
     final listaProdutos = ref.watch(dadosEmpresaControllerProvider);
 
+    final produtosAgrupados = agruparProdutosPorTipo(listaProdutos.value ?? []);
+
     return Scaffold(
       appBar: Tema.descricaoAcoes('Minha Empresa', []),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        empresa.nomeFantasia,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+        child: Column(
+          children: [
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      empresa.nomeFantasia,
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(FontAwesomeIcons.circleInfo,
+                            color: Colors.blue),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            empresa.descricao,
+                            style: const TextStyle(fontSize: 16),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Center(
-                        child: RichText(
-                          text: TextSpan(
-                            children: [
-                              const WidgetSpan(
-                                  child: Icon(FontAwesomeIcons.circleInfo,
-                                      color: Colors.blue, size: 20)),
-                              const WidgetSpan(child: SizedBox(width: 10)),
-                              TextSpan(
-                                text: empresa.descricao,
-                                style: const TextStyle(
-                                  fontSize: 16,
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Row(
+                      children: [
+                        Icon(FontAwesomeIcons.locationDot,
+                            color: Colors.deepPurple),
+                        SizedBox(width: 8),
+                        Text('LOCAIS DE ENTREGA:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: empresa.locaisEntrega
+                          .map<Widget>((local) => Chip(
+                              label: Text(local),
+                              backgroundColor: Colors.blue[50]))
+                          .toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 5,
+              childAspectRatio: MediaQuery.of(context).size.width /
+                  (MediaQuery.of(context).size.height / 2.5),
+              children: [
+                botaoAcaoEmpresa(
+                  icon: FontAwesomeIcons.circlePlus,
+                  label: 'Novo Produto',
+                  color: Colors.green,
+                  onTap: () {
+                    abrirPaginaIncluirEditarProduto();
+                  },
+                ),
+                botaoAcaoEmpresa(
+                  icon: FontAwesomeIcons.penToSquare,
+                  label: 'Editar Empresa',
+                  color: Colors.orange,
+                  onTap: () {
+                    abrirPaginaEditarEmpresa();
+                  },
+                ),
+                botaoAcaoEmpresa(
+                  icon: FontAwesomeIcons.clockRotateLeft,
+                  label: 'Histórico de Pedidos',
+                  color: Colors.purple,
+                  onTap: () {
+                    abrirPaginaHistoricoPedido();
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Produtos',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ...produtosAgrupados.entries.map((entry) {
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(entry.key.toUpperCase(),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      const Divider(),
+                      ...entry.value.map((produto) {
+                        return ListTile(
+                          leading: const Icon(FontAwesomeIcons.utensils,
+                              color: Colors.deepOrange),
+                          title: Text(produto.sabor),
+                          subtitle: Text(FormatadorMoedaReal.formatarValorReal(
+                              produto.valorUnitario)),
+                          trailing: const Icon(Icons.edit),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ProdutoEditPage(
+                                  produto: produto,
+                                  empresa: empresa,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      const Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(FontAwesomeIcons.locationDot,
-                                color: Colors.deepPurple),
-                            Text(
-                              'Locais de Entrega: ',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ...empresa.locaisEntrega.map(
-                        (local) => Chip(
-                          label: Text(local),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Wrap(
-                        children: [
-                          Container(
-                            child: botaoAcaoEmpresa(
-                              icon: FontAwesomeIcons.circlePlus,
-                              label: 'Adicionar Produto',
-                              onPressed: abrirPaginaIncluirEditarProduto,
-                              color: Colors.green,
-                            ),
-                          ),
-                          const SizedBox(height: 15, width: 10),
-                          Container(
-                            child: botaoAcaoEmpresa(
-                              icon: FontAwesomeIcons.penToSquare,
-                              label: 'Alterar Empresa',
-                              onPressed: abrirPaginaEditarEmpresa,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          const SizedBox(height: 15, width: 10),
-                          Container(
-                            child: botaoAcaoEmpresa(
-                              icon: FontAwesomeIcons.clockRotateLeft,
-                              label: 'Histórico de Vendas',
-                              onPressed: abrirPaginaHistoricoPedido,
-                              color: Colors.purple,
-                            ),
-                          ),
-                        ],
-                      ),
+                            );
+                          },
+                        );
+                      }),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              listaProdutos.when(data: (produtos) {
-                final produtosAgrupados = agruparProdutosPorTipo(produtos);
-                return ListView(
-                  shrinkWrap: true,
-                  children: produtosAgrupados.entries
-                      .map(
-                        (entry) => organizarProdutosPorTipo(
-                            context, entry.key, entry.value),
-                      )
-                      .toList(),
-                );
-              }, loading: () {
-                return const Center(child: CircularProgressIndicator());
-              }, error: (error, stack) {
-                return const Center(
-                  child: Column(
-                    children: [
-                      Text('Erro ao carregar produtos'),
-                    ],
-                  ),
-                );
-              })
-            ],
-          ),
+              );
+            }),
+          ],
         ),
       ),
       drawer: const MenuLateralWidget(),
@@ -214,17 +237,33 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
   Widget botaoAcaoEmpresa({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback onTap,
     required Color color,
   }) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(200, 50),
-        backgroundColor: color,
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        color: color.withValues(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: Colors.white, size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      icon: Icon(icon),
-      label: Text(label),
-      onPressed: onPressed,
     );
   }
 

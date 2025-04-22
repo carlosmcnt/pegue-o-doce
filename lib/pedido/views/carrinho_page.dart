@@ -4,11 +4,12 @@ import 'package:flutter_cart/cart.dart';
 import 'package:flutter_cart/model/cart_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pegue_o_doce/empresa/models/empresa.dart';
+import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
-import 'package:pegue_o_doce/pedido/views/historico_pedido_page.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
@@ -25,11 +26,20 @@ class CarrinhoPage extends ConsumerStatefulWidget {
 class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
   FlutterCart carrinho = FlutterCart();
   List<ItemPedido> itensSelecionados = [];
-  String? empresaId;
   double precoTotal = 0;
+  String? localEntregaSelecionado;
 
   List<CartModel> get produtosNoCarrinho {
     return carrinho.cartItemsList;
+  }
+
+  String get observacao {
+    for (var item in produtosNoCarrinho) {
+      if (item.productMeta != null && item.productMeta!['observacao'] != null) {
+        return item.productMeta!['observacao'];
+      }
+    }
+    return '';
   }
 
   List<ItemPedido> get listaItensCarrinho => produtosNoCarrinho
@@ -54,16 +64,16 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
     return [];
   }
 
-  Future<String> get idEmpresa async {
-    return await ref
-        .read(encomendaControllerProvider.notifier)
-        .obterEmpresaPorIdProduto(produtosNoCarrinho.first.productId);
-  }
-
   Future<String> get idUsuarioLogado async {
     return await ref
         .read(encomendaControllerProvider.notifier)
         .obterIdUsuarioLogado();
+  }
+
+  Future<Empresa> get empresa async {
+    return await ref
+        .read(encomendaControllerProvider.notifier)
+        .obterEmpresaPorIdProduto(produtosNoCarrinho.first.productId);
   }
 
   double calcularPrecoTotal(List<Produto> produtos) {
@@ -81,12 +91,12 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
       List<ItemPedido> itens, BuildContext context) async {
     final pedido = Pedido(
       usuarioClienteId: await idUsuarioLogado,
-      usuarioVendedorId: await idEmpresa,
+      usuarioVendedorId: await empresa.then((value) => value.usuarioId),
       itensPedido: itens,
       status: StatusPedido.PENDENTE.nome,
       dataPedido: Timestamp.now(),
       valorTotal: precoTotal,
-      observacao: '',
+      observacao: observacao,
       isEncomenda: false,
       dataUltimaAlteracao: Timestamp.now(),
       motivoCancelamento: null,
@@ -110,104 +120,171 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                 child: Text(
                   'Carrinho vazio',
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               )
             : Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Center(
                     child: Text(
                       "Resumo do Pedido",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8.0),
-                    child: const Text(
-                      'NOME DA EMPRESA AQUI',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
                       textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: FutureBuilder<List<Produto>>(
-                          future: produtos,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                              return const Center(
-                                  child: Text('Erro ao carregar produtos'));
-                            } else if (!snapshot.hasData ||
-                                snapshot.data!.isEmpty) {
-                              return const Center(
-                                  child: Text('Nenhum produto encontrado'));
-                            }
-                            final produtos = snapshot.data!;
-                            return Column(
-                              children: [
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: DataTable(columns: const [
-                                    DataColumn(
-                                      label: Text('Produto'),
-                                    ),
-                                    DataColumn(
-                                      label: Text('Val. Unitário'),
-                                    ),
-                                    DataColumn(
-                                      label: Text('Quantidade'),
-                                    ),
-                                  ], rows: [
-                                    for (var produto in produtos)
-                                      DataRow(cells: [
-                                        DataCell(Text(produto.sabor)),
-                                        DataCell(Text(FormatadorMoedaReal
-                                            .formatarValorReal(
-                                                produto.valorUnitario))),
-                                        DataCell(Text(
-                                            "${produtosNoCarrinho.firstWhere((item) => item.productId == produto.id).quantity}")),
-                                      ]),
-                                  ]),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: FutureBuilder<List<Produto>>(
+                      future: produtos,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError || !snapshot.hasData) {
+                          return const Center(
+                              child: Text('Erro ao carregar produtos.'));
+                        }
+                        final produtosList = snapshot.data!;
+                        return ListView.builder(
+                          itemCount: produtosNoCarrinho.length,
+                          itemBuilder: (context, index) {
+                            final item = produtosNoCarrinho[index];
+                            final produto = produtosList
+                                .firstWhere((p) => p.id == item.productId);
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: ListTile(
+                                title: Text(
+                                    '${produto.tipo} - ${produto.sabor}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        'Valor unitário: ${FormatadorMoedaReal.formatarValorReal(produto.valorUnitario)}'),
+                                    Text('Quantidade: ${item.quantity}'),
+                                  ],
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
+                                trailing: Text(
                                   FormatadorMoedaReal.formatarValorReal(
-                                      calcularPrecoTotal(produtos)),
-                                  textAlign: TextAlign.center,
+                                      produto.valorUnitario * item.quantity),
                                   style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                )
-                              ],
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                              ),
                             );
                           },
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 26),
                   Wrap(
                     alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Text('Selecione um local de entrega:',
+                          style: TextStyle(
+                            fontSize: 16,
+                          )),
+                      const SizedBox(width: 16),
+                      FutureBuilder<Empresa>(
+                        future: empresa,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          }
+                          if (snapshot.hasError || !snapshot.hasData) {
+                            return const Text(
+                              'Erro ao carregar locais de entrega.',
+                              style: TextStyle(fontSize: 16),
+                            );
+                          }
+                          final locaisEntrega = snapshot.data!.locaisEntrega;
+                          return DropdownMenu<String>(
+                            initialSelection: localEntregaSelecionado,
+                            width: MediaQuery.of(context).size.width,
+                            leadingIcon: const Icon(
+                              FontAwesomeIcons.locationDot,
+                              color: Colors.purple,
+                            ),
+                            onSelected: (String? novoTipo) {
+                              setState(() {
+                                localEntregaSelecionado = novoTipo;
+                              });
+                            },
+                            dropdownMenuEntries: locaisEntrega
+                                .map((local) => DropdownMenuEntry<String>(
+                                      value: local,
+                                      label: local,
+                                    ))
+                                .toList(),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    initialValue: observacao,
+                    decoration: InputDecoration(
+                      labelText: 'Observação',
+                      prefixIcon: const Icon(FontAwesomeIcons.comment),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      for (var item in produtosNoCarrinho) {
+                        item.productMeta!['observacao'] = value;
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: FutureBuilder<List<Produto>>(
+                      future: produtos,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError || !snapshot.hasData) {
+                          return const Text(
+                            'Erro ao calcular o total.',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          );
+                        }
+                        final total = calcularPrecoTotal(snapshot.data!);
+                        return Text(
+                          'Total: ${FormatadorMoedaReal.formatarValorReal(total)}',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {
-                          carrinho.clearCart();
-                          Navigator.of(context).pop();
+                          setState(() {
+                            produtosNoCarrinho.clear();
+                          });
                         },
                         icon: const Icon(FontAwesomeIcons.trashCan),
                         label: const Text("Limpar Carrinho"),
@@ -215,26 +292,13 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                           backgroundColor: Colors.red,
                         ),
                       ),
-                      const SizedBox(width: 10),
                       ElevatedButton.icon(
                         onPressed: () {
-                          if (produtosNoCarrinho.isNotEmpty) {
-                            carrinho.clearCart();
-                            enviarEncomenda(listaItensCarrinho, context);
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => const HistoricoPedidoPage(
-                                  isHistoricoEmpresa: false,
-                                ),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Esvaziando o carrinho...'),
-                              ),
-                            );
-                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Pedido enviado!"),
+                            ),
+                          );
                         },
                         icon: const Icon(FontAwesomeIcons.check),
                         label: const Text("Gerar Pedido"),
@@ -247,6 +311,7 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                 ],
               ),
       ),
+      drawer: const MenuLateralWidget(),
     );
   }
 }

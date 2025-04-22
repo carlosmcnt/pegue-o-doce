@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -17,20 +18,39 @@ class NormalizadorMoeda {
 }
 
 class FormatadorMoedaReal extends TextInputFormatter {
+  final ValueNotifier<double> valorNotifier;
+  static bool _bloquearFormatacao = false;
+
+  final NumberFormat _formatter =
+      NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
+  FormatadorMoedaReal({required this.valorNotifier});
+
+  static void bloquearFormatacaoTemporariamente(void Function() atualizar) {
+    _bloquearFormatacao = true;
+    atualizar();
+    _bloquearFormatacao = false;
+  }
+
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.selection.baseOffset == 0) {
-      return newValue;
+    if (_bloquearFormatacao) return newValue;
+
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsOnly.isEmpty) {
+      valorNotifier.value = 0.0;
+      return newValue.copyWith(text: '');
     }
 
-    double valor = double.parse(newValue.text);
-    final formatador = NumberFormat("#,##0.00", "pt_BR");
-    String valorFormatado = formatador.format(valor / 100);
+    final value = double.parse(digitsOnly) / 100;
+    valorNotifier.value = value;
+    final newText = _formatter.format(value);
 
-    return newValue.copyWith(
-        text: valorFormatado,
-        selection: TextSelection.collapsed(offset: valorFormatado.length));
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
   }
 
   static String formatarValorReal(double valor) {
