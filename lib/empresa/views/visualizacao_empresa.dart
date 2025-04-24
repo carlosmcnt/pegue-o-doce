@@ -274,17 +274,21 @@ class VisualizacaoEmpresaPageState
             if (existe) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
+                    backgroundColor: Colors.red,
+                    duration: Duration(seconds: 2),
                     content: Text("Empresa já foi favoritada anteriormente.")),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
+                    backgroundColor: Colors.green,
+                    duration: Duration(seconds: 2),
                     content: Text("Empresa favoritada com sucesso.")),
               );
 
               await ref
                   .read(dadosEmpresaControllerProvider.notifier)
-                  .adicionarEmpresaFavoritaPagePage(usuarioEmpresa);
+                  .adicionarEmpresaFavorita(usuarioEmpresa);
             }
 
             if (!context.mounted) return;

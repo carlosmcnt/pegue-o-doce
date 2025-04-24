@@ -36,8 +36,7 @@ class DadosEmpresaController extends _$DadosEmpresaController {
     }
   }
 
-  Future<void> adicionarEmpresaFavoritaPagePage(
-      UsuarioEmpresa usuarioEmpresa) async {
+  Future<void> adicionarEmpresaFavorita(UsuarioEmpresa usuarioEmpresa) async {
     await ref.read(usuarioEmpresaServiceProvider).adicionar(usuarioEmpresa);
   }
 
@@ -50,5 +49,9 @@ class DadosEmpresaController extends _$DadosEmpresaController {
     final usuario =
         await ref.read(usuarioServiceProvider).obterUsuarioPorId(idUsuario);
     return usuario.telefone;
+  }
+
+  Future<void> salvarTokenFCM(String usuarioId) async {
+    await ref.read(usuarioServiceProvider).salvarTokenFCM(usuarioId);
   }
 }
