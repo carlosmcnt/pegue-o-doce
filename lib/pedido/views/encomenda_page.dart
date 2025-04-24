@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
@@ -12,7 +11,6 @@ import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/utils/email_util.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
-import 'package:file_picker/file_picker.dart';
 
 class EncomendaPage extends ConsumerStatefulWidget {
   final Empresa empresa;
@@ -30,21 +28,14 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _observacaoController = TextEditingController();
   final TextEditingController _chavePixController = TextEditingController();
-  PlatformFile? arquivoSelecionado;
+  double valorTotal = 0.0;
   String? tipoSelecionado;
   List<Produto> produtos = [];
   List<ItemPedido> itensSelecionados = [];
   String? localEntregaSelecionado;
 
-  Future<void> selecionarArquivo() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-    if (result != null) {
-      setState(() {
-        arquivoSelecionado = result.files.first;
-      });
-    }
-  }
+  int get quantidadeTotal =>
+      itensSelecionados.fold(0, (total, p) => total + p.quantidade);
 
   void atualizarQuantidade(String produtoId, int delta) {
     setState(() {
@@ -62,13 +53,14 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
           itensSelecionados.removeWhere((i) => i.produtoId == produtoId);
         }
       }
-    });
-  }
-
-  double get precoTotal {
-    return itensSelecionados.fold(0, (soma, item) {
-      final produto = produtos.firstWhere((p) => p.id == item.produtoId);
-      return soma + (produto.valorUnitario * item.quantidade);
+      valorTotal = itensSelecionados.fold(
+          0.0,
+          (total, item) =>
+              total +
+              (produtos
+                      .firstWhere((p) => p.id == item.produtoId)
+                      .valorUnitario *
+                  item.quantidade));
     });
   }
 
@@ -85,16 +77,6 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
       return;
     }
 
-    if (arquivoSelecionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione um arquivo de comprovante de pagamento'),
-        ),
-      );
-      Navigator.pop(context);
-      return;
-    }
-
     final pedido = Pedido(
       usuarioClienteId: await ref
           .read(encomendaControllerProvider.notifier)
@@ -103,7 +85,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
       itensPedido: itens,
       status: StatusPedido.PENDENTE.nome,
       dataPedido: Timestamp.now(),
-      valorTotal: precoTotal,
+      valorTotal: valorTotal,
       observacao: _observacaoController.text,
       isEncomenda: true,
       dataUltimaAlteracao: Timestamp.now(),
@@ -131,14 +113,17 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
   void limparCampos() {
     setState(() {
+      valorTotal = 0.0;
       itensSelecionados.clear();
-      arquivoSelecionado = null;
       _observacaoController.clear();
+      localEntregaSelecionado = null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool podeEnviar = quantidadeTotal >= 10 && valorTotal > 0;
+
     return Scaffold(
       appBar: Tema.descricaoAcoes(
         "Realizar Encomenda",
@@ -152,6 +137,27 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
               key: _formKey,
               child: Column(
                 children: [
+                  if (quantidadeTotal < 10)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'É necessário selecionar no mínimo 10 unidades para realizar a encomenda.',
+                              style: TextStyle(color: Colors.orange.shade900),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Row(
                     children: [
                       Flexible(
@@ -179,91 +185,56 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                   const SizedBox(height: 16),
                   if (tipoSelecionado != null) carregarProdutosPorTipo(ref),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _chavePixController,
-                    decoration: InputDecoration(
-                      labelText: 'Chave PIX:',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      prefixIcon: const Icon(FontAwesomeIcons.qrcode),
-                      suffixIcon: IconButton(
-                        icon: const Icon(FontAwesomeIcons.copy),
-                        onPressed: () async {
-                          await Clipboard.setData(
-                              ClipboardData(text: _chavePixController.text));
-
-                          if (!context.mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Chave PIX copiada!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    readOnly: true,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: RichText(
-                          text: const TextSpan(
-                            children: [
-                              WidgetSpan(child: Icon(FontAwesomeIcons.filePdf)),
-                              WidgetSpan(child: SizedBox(width: 8)),
-                              TextSpan(
-                                text: 'Comprovante de Pagamento:',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                ),
+                      const Row(
+                        children: [
+                          Icon(FontAwesomeIcons.locationDot, size: 18),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Local de Retirada:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      ElevatedButton.icon(
-                        icon: const Icon(FontAwesomeIcons.fileArrowUp),
-                        onPressed: selecionarArquivo,
-                        label: const Text("Selecionar Arquivo"),
-                      ),
-                      const SizedBox(width: 5),
-                      if (arquivoSelecionado != null)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text("Arquivo: ${arquivoSelecionado!.name}"),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    children: [
-                      const Text('Selecione um local de entrega:',
-                          style: TextStyle(
-                            fontSize: 16,
-                          )),
-                      const SizedBox(width: 16),
-                      DropdownMenu<String>(
-                        initialSelection: null,
-                        onSelected: (String? novoTipo) {
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        value: localEntregaSelecionado,
+                        onChanged: (String? novoTipo) {
                           setState(() {
                             localEntregaSelecionado = novoTipo;
                           });
                         },
-                        dropdownMenuEntries: empresa.locaisEntrega
-                            .map((local) => DropdownMenuEntry<String>(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Campo obrigatório';
+                          }
+                          return null;
+                        },
+                        items: empresa.locaisEntrega
+                            .map((local) => DropdownMenuItem<String>(
                                   value: local,
-                                  label: local,
+                                  child: Text(
+                                    local,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ))
                             .toList(),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12.0, horizontal: 12.0),
+                        ),
                       ),
-                      const SizedBox(width: 16),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -294,28 +265,40 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                     child: Column(
                       children: [
                         Text(
-                          FormatadorMoedaReal.formatarValorReal(precoTotal),
+                          FormatadorMoedaReal.formatarValorReal(valorTotal),
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
-                        Tooltip(
-                          message: precoTotal > 0
-                              ? "Preencha os campos e envie o pedido"
-                              : "Selecione ao menos um produto",
-                          child: ElevatedButton.icon(
-                            onPressed: precoTotal > 0
-                                ? () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) =>
-                                          dialogoConfirmacao(context),
-                                    );
-                                  }
-                                : null,
-                            icon: const Icon(FontAwesomeIcons.check),
-                            label: const Text("Enviar"),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: podeEnviar
+                                  ? () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            dialogoConfirmacao(context),
+                                      );
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green),
+                              icon: const Icon(FontAwesomeIcons.check),
+                              label: const Text("Enviar"),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                limparCampos();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red),
+                              icon: const Icon(FontAwesomeIcons.trash),
+                              label: const Text("Limpar"),
+                            ),
+                          ],
                         ),
                       ],
                     ),
