@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
@@ -53,9 +52,9 @@ class EmailUtil {
         'Content-Type': 'application/json',
       },
       body: json.encode({
-        'service_id': dotenv.env['EMAILJS_SERVICE_ID'],
-        'template_id': dotenv.env['EMAILJS_TEMPLATE_ID'],
-        'user_id': dotenv.env['EMAILJS_PUBLIC_KEY'],
+        'service_id': const String.fromEnvironment('EMAILJS_SERVICE_ID'),
+        'template_id': const String.fromEnvironment('EMAILJS_TEMPLATE_ID'),
+        'user_id': const String.fromEnvironment('EMAILJS_USER_ID'),
         'template_params': {
           'to_email': usuarioVendedor.email,
           'codigo_pedido':

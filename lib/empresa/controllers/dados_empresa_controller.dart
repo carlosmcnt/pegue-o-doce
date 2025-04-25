@@ -50,8 +50,4 @@ class DadosEmpresaController extends _$DadosEmpresaController {
         await ref.read(usuarioServiceProvider).obterUsuarioPorId(idUsuario);
     return usuario.telefone;
   }
-
-  Future<void> salvarTokenFCM(String usuarioId) async {
-    await ref.read(usuarioServiceProvider).salvarTokenFCM(usuarioId);
-  }
 }
