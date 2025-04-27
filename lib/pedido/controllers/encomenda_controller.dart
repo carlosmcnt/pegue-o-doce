@@ -100,4 +100,18 @@ class EncomendaController extends _$EncomendaController {
       throw Exception('Produto não encontrado');
     }
   }
+
+  Future<double> obterPrecoTotal(
+      List<String> idsProdutos, List<int> quantidades) async {
+    final produtos = await obterProdutosPorIds(idsProdutos);
+    double precoTotal = 0.0;
+
+    for (int i = 0; i < produtos.length; i++) {
+      final produto = produtos[i];
+      final quantidade = quantidades[i];
+      precoTotal += produto.valorUnitario * quantidade;
+    }
+
+    return precoTotal;
+  }
 }

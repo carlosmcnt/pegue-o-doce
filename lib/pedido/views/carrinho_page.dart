@@ -28,18 +28,10 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
   List<ItemPedido> itensSelecionados = [];
   double precoTotal = 0;
   String? localEntregaSelecionado;
+  final TextEditingController _observacaoController = TextEditingController();
 
   List<CartModel> get produtosNoCarrinho {
     return carrinho.cartItemsList;
-  }
-
-  String get observacao {
-    for (var item in produtosNoCarrinho) {
-      if (item.productMeta != null && item.productMeta!['observacao'] != null) {
-        return item.productMeta!['observacao'];
-      }
-    }
-    return '';
   }
 
   List<ItemPedido> get listaItensCarrinho => produtosNoCarrinho
@@ -96,7 +88,7 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
       status: StatusPedido.PENDENTE.nome,
       dataPedido: Timestamp.now(),
       valorTotal: precoTotal,
-      observacao: observacao,
+      observacao: _observacaoController.text,
       isEncomenda: false,
       dataUltimaAlteracao: Timestamp.now(),
       motivoCancelamento: null,
@@ -112,7 +104,7 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes("Carrinho de Compras", []),
+      appBar: Tema.padrao("Carrinho de Compras"),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: carrinho.cartLength == 0
@@ -237,18 +229,22 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    initialValue: observacao,
+                    controller: _observacaoController,
                     decoration: InputDecoration(
-                      labelText: 'Observação',
-                      prefixIcon: const Icon(FontAwesomeIcons.comment),
+                      labelText: 'Observação:',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(10)),
+                      prefixIcon: const Icon(FontAwesomeIcons.comment),
                     ),
-                    onChanged: (value) {
-                      for (var item in produtosNoCarrinho) {
-                        item.productMeta!['observacao'] = value;
+                    maxLines: null,
+                    expands: true,
+                    maxLength: 200,
+                    keyboardType: TextInputType.multiline,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo obrigatório';
                       }
+                      return null;
                     },
                   ),
                   const SizedBox(height: 16),
@@ -285,6 +281,14 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                           setState(() {
                             produtosNoCarrinho.clear();
                           });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Carrinho limpo!"),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
                         },
                         icon: const Icon(FontAwesomeIcons.trashCan),
                         label: const Text("Limpar Carrinho"),
