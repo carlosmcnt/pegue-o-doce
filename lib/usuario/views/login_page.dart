@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cart/cart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/menu/controllers/dados_usuario_controller.dart';
@@ -23,6 +24,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
   late TextEditingController _senhaController;
   bool senhaVisivel = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  FlutterCart carrinho = FlutterCart();
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
       ref.invalidate(produtoListControllerProvider);
       ref.invalidate(historicoPedidoControllerProvider);
       ref.invalidate(dadosUsuarioControllerProvider);
+      carrinho.clearCart();
 
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => const MenuPrincipalPage(),

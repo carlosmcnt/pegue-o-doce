@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pegue_o_doce/pedido/views/carrinho_badge_page.dart';
 
 // Definição de paletas de cores
 class Cores {
@@ -196,7 +197,7 @@ class Tema {
     );
   }
 
-  static AppBar descricaoAcoes(String descricao, List<Widget> acoes) {
+  static AppBar padrao(String descricao) {
     return AppBar(
       toolbarHeight: const Size.fromHeight(70).height,
       centerTitle: true,
@@ -207,7 +208,27 @@ class Tema {
           fontWeight: FontWeight.bold,
         ),
       ),
-      actions: acoes,
+      actions: const [
+        CarrinhoBadgeWidget(),
+      ],
+    );
+  }
+
+  static AppBar historicoPedido(String descricao, List<Widget> acoes) {
+    return AppBar(
+      toolbarHeight: const Size.fromHeight(70).height,
+      centerTitle: true,
+      title: Text(
+        descricao,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      actions: [
+        const CarrinhoBadgeWidget(),
+        ...acoes,
+      ],
     );
   }
 }

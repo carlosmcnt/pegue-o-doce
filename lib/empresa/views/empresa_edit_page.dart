@@ -58,7 +58,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Incluir Empresa', []),
+      appBar: Tema.padrao('Incluir Empresa'),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Center(

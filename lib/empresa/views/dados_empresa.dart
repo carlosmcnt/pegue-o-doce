@@ -86,7 +86,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
     final produtosAgrupados = agruparProdutosPorTipo(listaProdutos.value ?? []);
 
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Minha Empresa', []),
+      appBar: Tema.padrao('Minha Empresa'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

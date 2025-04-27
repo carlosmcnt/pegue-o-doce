@@ -31,7 +31,6 @@ class Validador {
   }
 
   static String aplicarMascaraTelefoneSemDDD(String telefone) {
-    // A string de telefone vem com DDD, remova antes das operações
     String padrao = r'(\d{2})(\d{5})(\d{4})';
     RegExp regex = RegExp(padrao);
     return telefone.replaceAllMapped(

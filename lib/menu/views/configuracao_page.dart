@@ -53,7 +53,7 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Configurações', []),
+      appBar: Tema.padrao('Configurações'),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(20),

@@ -125,10 +125,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
     final bool podeEnviar = quantidadeTotal >= 10 && valorTotal > 0;
 
     return Scaffold(
-      appBar: Tema.descricaoAcoes(
-        "Realizar Encomenda",
-        [],
-      ),
+      appBar: Tema.padrao("Realizar Encomenda"),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -248,8 +245,9 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                             borderRadius: BorderRadius.circular(10)),
                         prefixIcon: const Icon(FontAwesomeIcons.comment),
                       ),
-                      maxLines: null, // Set this
-                      expands: true, // and this
+                      maxLines: null,
+                      expands: true,
+                      maxLength: 200,
                       keyboardType: TextInputType.multiline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {

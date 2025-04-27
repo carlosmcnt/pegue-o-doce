@@ -46,7 +46,7 @@ class VisualizacaoEmpresaPageState
     });
 
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Visualizar Empresa', []),
+      appBar: Tema.padrao('Visualizar Empresa'),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),

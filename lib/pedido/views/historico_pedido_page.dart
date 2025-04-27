@@ -48,7 +48,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     List<Pedido> listaPedidos = aplicarFiltros(pedidosAsync);
 
     return Scaffold(
-      appBar: Tema.descricaoAcoes(
+      appBar: Tema.historicoPedido(
         "Histórico de Pedidos",
         [exibirFiltroStatus()],
       ),
@@ -223,7 +223,6 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               ],
             ),
             const Divider(),
-            // Linha de status e tipo de pedido
             Row(
               children: [
                 Icon(
@@ -240,7 +239,6 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               ],
             ),
             const SizedBox(height: 8),
-            // Valor a ser pago
             const Text("Valor a ser pago:",
                 style: TextStyle(color: Colors.black54)),
             Text(
@@ -248,7 +246,6 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            // Botões de ação
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

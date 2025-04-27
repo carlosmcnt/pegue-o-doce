@@ -4,6 +4,7 @@ import 'package:flutter_cart/model/cart_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
+import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/views/carrinho_page.dart';
@@ -25,285 +26,329 @@ class PedidoPage extends ConsumerStatefulWidget {
 class PedidoPageState extends ConsumerState<PedidoPage> {
   Empresa get empresa => widget.empresa;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _observacaoController = TextEditingController();
   List<ItemPedido> itensSelecionados = [];
-  Map<String, int> selecionados = {};
   List<Produto> produtos = [];
   FlutterCart carrinho = FlutterCart();
-  double precoTotal = 0;
+
+  void sincronizarCarrinho() {
+    final noCarrinho = carrinho.cartItemsList;
+    itensSelecionados = [];
+    for (var cartItem in noCarrinho) {
+      final p = produtos.firstWhere(
+        (p) => p.id == cartItem.productId,
+        orElse: () => Produto.empty(empresa.id!),
+      );
+      if (p.id != null) {
+        itensSelecionados.add(
+          ItemPedido(
+            id: p.id,
+            produtoId: p.id,
+            quantidade: cartItem.quantity,
+          ),
+        );
+      }
+    }
+    setState(() {});
+  }
 
   void atualizarQuantidade(String produtoId, int delta) {
     setState(() {
-      final item = itensSelecionados.firstWhere(
-        (i) => i.produtoId == produtoId,
-        orElse: () => ItemPedido(id: null, produtoId: produtoId, quantidade: 0),
-      );
-
-      if (item.id == null) {
+      final indice =
+          itensSelecionados.indexWhere((i) => i.produtoId == produtoId);
+      if (indice == -1 && delta > 0) {
         itensSelecionados.add(
             ItemPedido(id: produtoId, produtoId: produtoId, quantidade: delta));
-      } else {
-        item.quantidade += delta;
-        if (item.quantidade <= 0) {
-          itensSelecionados.removeWhere((i) => i.produtoId == produtoId);
+      } else if (indice != -1) {
+        itensSelecionados[indice].quantidade += delta;
+        if (itensSelecionados[indice].quantidade <= 0) {
+          itensSelecionados.removeAt(indice);
         }
       }
     });
   }
 
-  void verificarItensNoCarrinho() {
-    List<CartModel> itensCarrinho = carrinho.cartItemsList;
-    if (itensCarrinho.isEmpty) {
-      return;
+  double get precoTotal => itensSelecionados.fold(0, (sum, item) {
+        final p = produtos.firstWhere((p) => p.id == item.produtoId);
+        return sum + (p.valorUnitario * item.quantidade);
+      });
+
+  void adicionarAoCarrinho() {
+    for (var it in itensSelecionados) {
+      final p = produtos.firstWhere((p) => p.id == it.produtoId);
+      carrinho.addToCart(
+        cartModel: CartModel(
+          productId: p.id!,
+          productName: '${p.tipo} - ${p.sabor}',
+          quantity: it.quantidade,
+          variants: [],
+          productDetails: p.empresaId,
+        ),
+      );
     }
-    for (var item in itensCarrinho) {
-      final produto = produtos.firstWhere((p) => p.id == item.productId,
-          orElse: () => Produto.empty(empresa.id!));
-      if (produto.id != null) {
-        itensSelecionados.add(ItemPedido(
-          id: produto.id,
-          produtoId: produto.id,
-          quantidade: item.quantity,
-        ));
-      }
-    }
-    precoTotal = 0;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Itens adicionados ao carrinho'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.green),
+    );
+    sincronizarCarrinho();
+    itensSelecionados.clear();
   }
 
-  double obterPrecoTotal(List<ItemPedido> itensSelecionados) {
-    return itensSelecionados.fold(0, (soma, item) {
-      final produto = produtos.firstWhere((p) => p.id == item.produtoId);
-      return soma + (produto.valorUnitario * item.quantidade);
-    });
+  void verificarCarrinhoItemEmpresa() {
+    final itensCarrinho = carrinho.cartItemsList;
+    final sameEmpresa = itensCarrinho.isEmpty ||
+        itensCarrinho.first.productDetails == empresa.id;
+    if (!sameEmpresa) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return dialogLimparCarrinho(context);
+        },
+      );
+    } else {
+      adicionarAoCarrinho();
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    verificarItensNoCarrinho();
   }
 
   @override
   void dispose() {
-    _observacaoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes(
-        "Pedido - ${empresa.nomeFantasia}",
-        [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
+      appBar: Tema.padrao("Pedido - ${empresa.nomeFantasia}"),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Center(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  const Center(
-                    child: Text(
-                      "Selecione os produtos desejados e adiciona uma observação desejada:",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
+        child: Center(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: FutureBuilder<List<Produto>>(
-                      future: ref
-                          .read(encomendaControllerProvider.notifier)
-                          .listarProdutos(widget.empresa.id!),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else if (snapshot.hasError) {
-                          return Text('Erro: ${snapshot.error}');
-                        } else if (snapshot.hasData) {
-                          produtos = snapshot.data!;
-                          return retornarListaProdutos();
-                        } else {
-                          return const Text('Nenhum produto encontrado.');
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 100,
-                    child: TextFormField(
-                      controller: _observacaoController,
-                      decoration: InputDecoration(
-                        labelText: 'Observação:',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        prefixIcon: const Icon(FontAwesomeIcons.comment),
-                      ),
-                      maxLines: null, // Set this
-                      expands: true, // and this
-                      keyboardType: TextInputType.multiline,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Campo obrigatório';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Total: ${FormatadorMoedaReal.formatarValorReal(obterPrecoTotal(itensSelecionados))}",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    runSpacing: MediaQuery.of(context).size.width * 0.05,
+                  child: const Row(
                     children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add_shopping_cart),
-                        label: const Text("Adicionar ao Carrinho"),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            if (itensSelecionados.isNotEmpty) {
-                              for (var item in itensSelecionados) {
-                                if (carrinho.cartItemsList.isNotEmpty) {
-                                  if (carrinho
-                                          .cartItemsList.first.productDetails !=
-                                      empresa.id) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return dialogLimparCarrinho(context);
-                                        });
-                                  }
-                                } else {
-                                  carrinho.addToCart(
-                                    cartModel: CartModel(
-                                      productId: item.produtoId!,
-                                      productName: produtos
-                                          .firstWhere(
-                                              (p) => p.id == item.produtoId)
-                                          .sabor,
-                                      quantity: item.quantidade,
-                                      variants: [],
-                                      productDetails: produtos
-                                          .firstWhere(
-                                              (p) => p.id == item.produtoId)
-                                          .empresaId,
-                                      productMeta: {
-                                        'observacao':
-                                            _observacaoController.text,
-                                      },
-                                    ),
-                                  );
-                                }
-                              }
-
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const CarrinhoPage(),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                      const SizedBox(width: 16, height: 16),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.check),
-                        label: const Text("Limpar Selecionados"),
-                        onPressed: () {
-                          setState(() {
-                            itensSelecionados.clear();
-                          });
-                        },
+                      Icon(Icons.info, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Selecione quantas unidades desejar e clique em "Adicionar ao Carrinho". '
+                          'Você pode navegar por várias categorias; o carrinho mantém tudo aqui.',
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: FutureBuilder<List<Produto>>(
+                    future: ref
+                        .read(encomendaControllerProvider.notifier)
+                        .listarProdutos(widget.empresa.id!),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Erro: ${snapshot.error}');
+                      } else if (snapshot.hasData) {
+                        produtos = snapshot.data!;
+                        return retornarListaProdutos();
+                      } else {
+                        return const Text('Nenhum produto encontrado.');
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Total: ${FormatadorMoedaReal.formatarValorReal(precoTotal)}",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  runSpacing: MediaQuery.of(context).size.width * 0.05,
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add_shopping_cart),
+                      label: const Text("Adicionar ao Carrinho"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      onPressed: itensSelecionados.isEmpty
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                verificarCarrinhoItemEmpresa();
+                              }
+                            },
+                    ),
+                    const SizedBox(width: 16, height: 16),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.check),
+                      label: const Text("Limpar Selecionados"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          itensSelecionados.clear();
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
+      ),
+      drawer: const MenuLateralWidget(),
+    );
+  }
+
+  void mostrarPopupCarrinho() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Meu Carrinho'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (carrinho.cartItemsList.isEmpty)
+                const Text('Carrinho vazio.')
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: carrinho.cartItemsList.length,
+                    itemBuilder: (_, i) {
+                      final it = carrinho.cartItemsList[i];
+                      return ListTile(
+                        dense: true,
+                        title: Text(it.productName),
+                        subtitle: Text('Qtd: ${it.quantity}'),
+                      );
+                    },
+                  ),
+                ),
+              const Divider(),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Total: ${FormatadorMoedaReal.formatarValorReal(carrinho.cartItemsList.fold(0.0, (total, item) {
+                    final produto = produtos.firstWhere(
+                      (p) => p.id == item.productId,
+                      orElse: () => Produto.empty(empresa.id!),
+                    );
+                    return total + (produto.valorUnitario * item.quantity);
+                  }))}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CarrinhoPage()));
+            },
+            child: const Text('Ver Carrinho'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+        ],
       ),
     );
   }
 
   AlertDialog dialogLimparCarrinho(BuildContext context) {
     return AlertDialog(
-      title: const Icon(FontAwesomeIcons.trash, color: Colors.grey, size: 50),
+      title: const Icon(FontAwesomeIcons.trash, color: Colors.red),
       content: const Text(
-          'O carrinho já possui produtos de outra empresa. Deseja realmente limpar o carrinho?'),
+          'O carrinho contém itens de outra empresa. Deseja limpar e adicionar estes?'),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text("Cancelar"),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
         ),
         TextButton(
-          style: TextButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-          ),
           onPressed: () {
             carrinho.clearCart();
-            Navigator.of(context).pop();
+            Navigator.pop(context);
+            adicionarAoCarrinho();
           },
-          child: const Text("Limpar"),
+          child: const Text('Limpar e Adicionar'),
         ),
       ],
     );
   }
 
   Widget retornarListaProdutos() {
-    return ListView.builder(
-      shrinkWrap: true,
+    final cols = MediaQuery.of(context).size.width > 600 ? 3 : 2;
+    return GridView.builder(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: cols,
+        childAspectRatio: 3 / 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
       itemCount: produtos.length,
-      itemBuilder: (context, index) {
-        final produto = produtos[index];
-        final item = itensSelecionados.firstWhere(
-          (i) => i.produtoId == produto.id,
-          orElse: () =>
-              ItemPedido(id: null, produtoId: produto.id, quantidade: 0),
-        );
-        return SizedBox(
-          height: 80,
-          child: ListTile(
-            title: Text(produto.sabor),
-            subtitle: Text(
-                FormatadorMoedaReal.formatarValorReal(produto.valorUnitario)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+      itemBuilder: (c, i) {
+        final p = produtos[i];
+        final qtd = itensSelecionados
+            .firstWhere((it) => it.produtoId == p.id,
+                orElse: () =>
+                    ItemPedido(id: null, produtoId: p.id, quantidade: 0))
+            .quantidade;
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(FontAwesomeIcons.minus),
-                  onPressed: item.quantidade > 0
-                      ? () => atualizarQuantidade(produto.id!, -1)
-                      : null,
-                ),
-                Text("${item.quantidade}"),
-                IconButton(
-                  icon: const Icon(FontAwesomeIcons.plus),
-                  onPressed: () => atualizarQuantidade(produto.id!, 1),
+                Text(p.sabor,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(FormatadorMoedaReal.formatarValorReal(p.valorUnitario)),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed:
+                          qtd > 0 ? () => atualizarQuantidade(p.id!, -1) : null,
+                    ),
+                    Text('$qtd'),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: () => atualizarQuantidade(p.id!, 1),
+                    ),
+                  ],
                 ),
               ],
             ),

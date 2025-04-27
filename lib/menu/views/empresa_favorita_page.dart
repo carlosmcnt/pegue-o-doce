@@ -34,7 +34,7 @@ class EmpresaFavoritaPageState extends ConsumerState<EmpresaFavoritaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Minhas Empresas Favoritas', []),
+      appBar: Tema.padrao('Minhas Empresas Favoritas'),
       body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Center(

@@ -47,10 +47,7 @@ class PesquisaEmpresaPageState extends ConsumerState<PesquisaEmpresaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes(
-        'Pesquisa de Empresas',
-        [],
-      ),
+      appBar: Tema.padrao('Pesquisa de Empresas'),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

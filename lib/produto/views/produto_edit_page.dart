@@ -87,7 +87,7 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.descricaoAcoes('Incluir/Editar Produto', []),
+      appBar: Tema.padrao('Incluir/Editar Produto'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
