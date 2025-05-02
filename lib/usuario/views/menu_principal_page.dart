@@ -12,9 +12,7 @@ class MenuPrincipalPage extends ConsumerStatefulWidget {
   const MenuPrincipalPage({super.key});
 
   @override
-  ConsumerState<MenuPrincipalPage> createState() {
-    return MenuPrincipalWidgetState();
-  }
+  ConsumerState<MenuPrincipalPage> createState() => MenuPrincipalWidgetState();
 }
 
 class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
@@ -26,10 +24,10 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
   @override
   void initState() {
     super.initState();
-    listaCategoriasFuture = _carregarCategorias();
+    listaCategoriasFuture = carregarCategorias();
   }
 
-  Future<List<Categoria>> _carregarCategorias() async {
+  Future<List<Categoria>> carregarCategorias() async {
     final categorias =
         await ref.read(categoriaRepositoryProvider).getCategoriasAtivas();
     totalCategorias = categorias;
@@ -37,31 +35,28 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
     return categorias;
   }
 
-  void atualizarCategoriasEmExibicao(String texto) {
+  void atualizarFiltro(String texto) {
     textoPesquisa = texto;
-
     if (textoPesquisa.isEmpty) {
       setState(() {
         categoriasEmExibicao = totalCategorias.take(6).toList();
       });
     } else {
-      final fuzzy = Fuzzy(
+      final fuse = Fuzzy<String>(
         totalCategorias.map((c) => c.nome).toList(),
         options: FuzzyOptions(
           findAllMatches: false,
-          threshold: 0.3,
-          distance: 50,
+          threshold: 0.2,
+          distance: 20,
           minMatchCharLength: 2,
         ),
       );
-
-      final resultado = fuzzy.search(textoPesquisa);
-      final categoriasEncontradas = resultado
-          .map((r) => totalCategorias.firstWhere((c) => c.nome == r.item))
-          .toList();
-
+      final resultados = fuse.search(textoPesquisa);
+      final encontrados = resultados.map((r) {
+        return totalCategorias.firstWhere((c) => c.nome == r.item);
+      }).toList();
       setState(() {
-        categoriasEmExibicao = categoriasEncontradas;
+        categoriasEmExibicao = encontrados;
       });
     }
   }
@@ -71,23 +66,30 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
     return Scaffold(
       appBar: Tema.menuPrincipal(),
       drawer: const MenuLateralWidget(),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
+      body: FutureBuilder<List<Categoria>>(
+        future: listaCategoriasFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+                child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: CircularProgressIndicator(),
+            ));
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Erro ao carregar categorias.'));
+          }
           return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    cabecalho(),
-                    const SizedBox(height: 12),
-                    barraPesquisa(),
-                    const SizedBox(height: 12),
-                    gridCategoria(),
-                  ],
-                ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  retornarCabecalho(),
+                  const SizedBox(height: 12),
+                  retornarBarraPesquisa(),
+                  retornarContagemItens(),
+                  const SizedBox(height: 12),
+                  retornarGridCategorias(categoriasEmExibicao),
+                ],
               ),
             ),
           );
@@ -96,11 +98,11 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
     );
   }
 
-  Widget cabecalho() {
+  Widget retornarCabecalho() {
     return const Column(
       children: [
         Text(
-          'Bem-vindo ao Pegue o Doce! \n Escolha uma categoria',
+          'Bem-vindo ao Pegue o Doce!\nEscolha uma categoria',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
@@ -114,60 +116,80 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
     );
   }
 
-  Widget barraPesquisa() {
-    return SearchBar(
-      hintText: 'Pesquisar por categoria',
-      leading: const Icon(Icons.search),
-      onChanged: atualizarCategoriasEmExibicao,
-      trailing: const [
-        Tooltip(
-          message:
-              '6 categorias são exibidas por padrão.\nDigite para pesquisar por outras categorias possíveis.',
-          child: Icon(FontAwesomeIcons.circleQuestion),
+  Widget retornarBarraPesquisa() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Pesquisar por categoria',
+                prefixIcon: const Icon(Icons.search),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onChanged: atualizarFiltro,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Tooltip(
+            message:
+                '6 categorias são exibidas por padrão.\nDigite para pesquisar outras.',
+            child: Icon(FontAwesomeIcons.circleQuestion),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget retornarContagemItens() {
+    if (textoPesquisa.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '${categoriasEmExibicao.length} resultado(s) para "$textoPesquisa"',
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
-      ],
+      ),
     );
   }
 
-  Widget gridCategoria() {
-    return FutureBuilder<List<Categoria>>(
-      future: listaCategoriasFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(32.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return const Center(child: Text('Erro ao carregar categorias.'));
-        } else if (snapshot.hasData) {
-          if (categoriasEmExibicao.isEmpty) {
-            return const Center(child: Text('Nenhuma categoria encontrada.'));
-          }
-          return GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 300,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 1,
-            ),
-            itemCount: categoriasEmExibicao.length,
-            itemBuilder: (context, index) {
-              return cardCategoria(categoriasEmExibicao[index]);
-            },
-          );
-        }
-        return const SizedBox.shrink();
-      },
+  Widget retornarGridCategorias(List<Categoria> lista) {
+    if (lista.isEmpty) {
+      return Center(
+        child: Text(
+          textoPesquisa.isEmpty
+              ? 'Nenhuma categoria disponível.'
+              : 'Nenhum resultado para "$textoPesquisa"',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 300,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemCount: lista.length,
+      itemBuilder: (context, index) => retornarCardCategorias(lista[index]),
     );
   }
 
-  Widget cardCategoria(Categoria categoria) {
+  Widget retornarCardCategorias(Categoria categoria) {
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade400, width: 1),
+      ),
+      elevation: 3,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -181,9 +203,7 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
                   child: Text(
                     categoria.nome,
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 16, fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -195,8 +215,8 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
               child: Text(
                 categoria.descricao,
                 style: const TextStyle(fontSize: 12),
-                softWrap: true,
                 maxLines: 4,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(height: 8),
@@ -205,14 +225,11 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
                 backgroundColor: Colors.lightGreen,
                 padding: const EdgeInsets.symmetric(vertical: 8),
               ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        PesquisaEmpresaPage(categoria: categoria),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PesquisaEmpresaPage(categoria: categoria),
+                ),
+              ),
               child: const Text('Selecionar'),
             ),
           ],
