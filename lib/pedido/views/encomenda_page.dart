@@ -8,7 +8,6 @@ import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
-import 'package:pegue_o_doce/utils/email_util.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 
@@ -95,14 +94,6 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
     await ref.read(encomendaControllerProvider.notifier).inserirPedido(pedido);
 
     if (!context.mounted) return;
-
-    await EmailUtil.enviarEmailEncomenda(
-      context,
-      localEntregaSelecionado!,
-      pedido,
-      produtos,
-      ref,
-    );
   }
 
   @override
@@ -246,7 +237,6 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                         prefixIcon: const Icon(FontAwesomeIcons.comment),
                       ),
                       maxLines: null,
-                      expands: true,
                       maxLength: 200,
                       keyboardType: TextInputType.multiline,
                       validator: (value) {

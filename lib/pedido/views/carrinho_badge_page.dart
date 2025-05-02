@@ -86,8 +86,7 @@ class CarrinhoBadgeWidget extends ConsumerWidget {
                 actions: [
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
+                      Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (_) => const CarrinhoPage(),
                         ),

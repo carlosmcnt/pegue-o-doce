@@ -237,7 +237,6 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                       prefixIcon: const Icon(FontAwesomeIcons.comment),
                     ),
                     maxLines: null,
-                    expands: true,
                     maxLength: 200,
                     keyboardType: TextInputType.multiline,
                     validator: (value) {

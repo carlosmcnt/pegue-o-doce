@@ -100,7 +100,6 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
                 child: TextFormField(
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
-                  expands: true,
                   maxLength: 200,
                   controller: _descricaoController,
                   decoration: InputDecoration(
