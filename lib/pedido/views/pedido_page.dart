@@ -343,7 +343,27 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                       onPressed:
                           qtd > 0 ? () => atualizarQuantidade(p.id!, -1) : null,
                     ),
-                    Text('$qtd'),
+                    SizedBox(
+                      width: 40,
+                      height: 30,
+                      child: TextFormField(
+                        controller: TextEditingController(
+                            text: qtd > 0 ? qtd.toString() : ''),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        decoration: const InputDecoration(
+                          contentPadding:
+                              EdgeInsets.symmetric(vertical: 0, horizontal: 5),
+                          border: OutlineInputBorder(),
+                        ),
+                        onFieldSubmitted: (value) {
+                          final novaQtd = int.tryParse(value);
+                          if (novaQtd != null && novaQtd >= 0) {
+                            atualizarQuantidade(p.id!, novaQtd - qtd);
+                          }
+                        },
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: () => atualizarQuantidade(p.id!, 1),

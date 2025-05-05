@@ -376,29 +376,49 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                     ItemPedido(id: null, produtoId: produto.id, quantidade: 0),
               );
               return SizedBox(
-                height: 80,
-                child: ListTile(
-                  title: Text(produto.sabor),
-                  subtitle: Text(FormatadorMoedaReal.formatarValorReal(
-                      produto.valorUnitario)),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(FontAwesomeIcons.minus),
-                        onPressed: item.quantidade > 0
-                            ? () => atualizarQuantidade(produto.id!, -1)
-                            : null,
-                      ),
-                      Text("${item.quantidade}"),
-                      IconButton(
-                        icon: const Icon(FontAwesomeIcons.plus),
-                        onPressed: () => atualizarQuantidade(produto.id!, 1),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+                  height: 80,
+                  child: ListTile(
+                    title: Text(produto.sabor),
+                    subtitle: Text(FormatadorMoedaReal.formatarValorReal(
+                        produto.valorUnitario)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(FontAwesomeIcons.minus),
+                          onPressed: item.quantidade > 0
+                              ? () => atualizarQuantidade(produto.id!, -1)
+                              : null,
+                        ),
+                        SizedBox(
+                          width: 40,
+                          height: 30,
+                          child: TextFormField(
+                            controller: TextEditingController(
+                                text: item.quantidade.toString()),
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 0, horizontal: 5),
+                              border: OutlineInputBorder(),
+                            ),
+                            onFieldSubmitted: (value) {
+                              final novaQtd = int.tryParse(value);
+                              if (novaQtd != null && novaQtd >= 0) {
+                                atualizarQuantidade(
+                                    produto.id!, novaQtd - item.quantidade);
+                              }
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(FontAwesomeIcons.plus),
+                          onPressed: () => atualizarQuantidade(produto.id!, 1),
+                        ),
+                      ],
+                    ),
+                  ));
             },
           );
         }
