@@ -18,13 +18,14 @@ class UsuarioController extends _$UsuarioController {
   }
 
   Future<bool> cadastrar(String nome, String email, String senha, String cpf,
-      String telefone, BuildContext context) async {
+      String telefone, String token, BuildContext context) async {
     return await ref.read(usuarioServiceProvider).registrar(
         nome: nome,
         email: email,
         senha: senha,
         cpf: cpf,
         telefone: telefone,
+        token: token,
         context: context);
   }
 

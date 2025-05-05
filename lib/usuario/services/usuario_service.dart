@@ -61,6 +61,7 @@ class UsuarioService {
       required String cpf,
       required String senha,
       required String telefone,
+      String? token,
       required BuildContext context}) async {
     final resultado = await usuarioRepository.registrar(
       nomeCompleto: nome,
@@ -68,6 +69,7 @@ class UsuarioService {
       cpf: cpf,
       senha: senha,
       telefone: telefone,
+      token: token ?? '',
     );
     if (resultado == true) {
       SnackBarUtil.showSnackbar(

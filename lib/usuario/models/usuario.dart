@@ -9,6 +9,7 @@ class Usuario {
   final String telefone;
   final Timestamp dataCadastro;
   final Timestamp dataUltimaAlteracao;
+  final String? token;
 
   Usuario(
       {this.id,
@@ -17,7 +18,8 @@ class Usuario {
       required this.cpf,
       required this.telefone,
       required this.dataCadastro,
-      required this.dataUltimaAlteracao});
+      required this.dataUltimaAlteracao,
+      this.token});
 
   factory Usuario.fromFirebase(User firebaseUser, Map<String, dynamic> data) {
     return Usuario(
@@ -28,6 +30,7 @@ class Usuario {
       telefone: data['telefone'],
       dataCadastro: data['dataCadastro'],
       dataUltimaAlteracao: data['dataUltimaAlteracao'],
+      token: data['token'],
     );
   }
 
@@ -40,6 +43,7 @@ class Usuario {
       telefone: doc['telefone'],
       dataCadastro: doc['dataCadastro'],
       dataUltimaAlteracao: doc['dataUltimaAlteracao'],
+      token: doc['token'],
     );
   }
 
@@ -62,6 +66,7 @@ class Usuario {
     String? telefone,
     Timestamp? dataCadastro,
     Timestamp? dataUltimaAlteracao,
+    String? token,
   }) {
     return Usuario(
       id: id ?? this.id,
@@ -71,6 +76,7 @@ class Usuario {
       telefone: telefone ?? this.telefone,
       dataCadastro: dataCadastro ?? this.dataCadastro,
       dataUltimaAlteracao: dataUltimaAlteracao ?? this.dataUltimaAlteracao,
+      token: token ?? this.token,
     );
   }
 }

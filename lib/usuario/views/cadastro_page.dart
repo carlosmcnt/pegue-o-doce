@@ -2,6 +2,7 @@ import 'package:br_validators/br_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:pegue_o_doce/usuario/controllers/usuario_controller.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/validador.dart';
@@ -57,6 +58,18 @@ class CadastroPageState extends ConsumerState<CadastroPage> {
 
     setState(() => desabilitarBotao = true);
 
+    final token = OneSignal.User.pushSubscription.id;
+
+    if (token == null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Erro ao obter ID do dispositivo para notificações')),
+      );
+      setState(() => desabilitarBotao = false);
+      return;
+    }
+
     bool retornoCadastro = await ref
         .read(usuarioControllerProvider.notifier)
         .cadastrar(
@@ -65,6 +78,7 @@ class CadastroPageState extends ConsumerState<CadastroPage> {
           _senhaController.text,
           _cpfController.text,
           _telefoneController.text,
+          token,
           context,
         )
         .whenComplete(() {

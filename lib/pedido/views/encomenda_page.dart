@@ -8,7 +8,10 @@ import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
+import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
+import 'package:pegue_o_doce/utils/notificacao_utils.dart';
+import 'package:pegue_o_doce/utils/snackbar_util.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 
 class EncomendaPage extends ConsumerStatefulWidget {
@@ -26,7 +29,6 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
   Empresa get empresa => widget.empresa;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _observacaoController = TextEditingController();
-  final TextEditingController _chavePixController = TextEditingController();
   double valorTotal = 0.0;
   String? tipoSelecionado;
   List<Produto> produtos = [];
@@ -76,6 +78,10 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
       return;
     }
 
+    Usuario usuarioVendedor = await ref
+        .read(encomendaControllerProvider.notifier)
+        .obterUsuarioPorId(empresa.usuarioId);
+
     final pedido = Pedido(
       usuarioClienteId: await ref
           .read(encomendaControllerProvider.notifier)
@@ -93,13 +99,24 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
     await ref.read(encomendaControllerProvider.notifier).inserirPedido(pedido);
 
+    NotificacaoUtils.enviarNotificacaoPush(token: usuarioVendedor.token!);
+
     if (!context.mounted) return;
+
+    Navigator.pop(context);
+
+    SnackBarUtil.showSnackbar(
+      mensagem: 'Encomenda enviada com sucesso!',
+      context: context,
+      erro: false,
+    );
+
+    limparCampos();
   }
 
   @override
   void initState() {
     super.initState();
-    _chavePixController.text = empresa.chavePix;
   }
 
   void limparCampos() {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_cart/cart.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:pegue_o_doce/utils/roteador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 import 'firebase/firebase_options.dart';
@@ -13,6 +15,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await dotenv.load(fileName: ".env");
+
+  OneSignal.initialize(
+    dotenv.env['ONESIGNAL_APP_ID']!,
+  );
+
+  OneSignal.Notifications.requestPermission(true);
+
   runApp(
     ProviderScope(
       child: MaterialApp(

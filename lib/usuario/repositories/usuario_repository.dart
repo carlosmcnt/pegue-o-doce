@@ -19,6 +19,7 @@ class UsuarioRepository {
     required String cpf,
     required String senha,
     required String telefone,
+    required String token,
   }) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -36,6 +37,7 @@ class UsuarioRepository {
         'telefone': telefone,
         'dataCadastro': Timestamp.now(),
         'dataUltimaAlteracao': Timestamp.now(),
+        'token': token,
       });
 
       return true;
