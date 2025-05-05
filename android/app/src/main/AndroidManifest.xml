@@ -1,6 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.pegue_o_doce">
     <application
-        android:label="pegue_o_doce"
+        android:label="@string/application_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
