@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pegue_o_doce/empresa/models/local_entrega.dart';
 
 class Empresa {
   final String? id;
@@ -7,7 +8,7 @@ class Empresa {
   final String chavePix;
   final String descricao;
   final String logomarca;
-  final List<String> locaisEntrega;
+  final List<LocalEntrega> locaisEntrega;
   final Timestamp dataCadastro;
   final Timestamp dataUltimaAlteracao;
 
@@ -44,7 +45,10 @@ class Empresa {
       chavePix: data['chavePix'] ?? '',
       descricao: data['descricao'] ?? '',
       logomarca: data['logomarca'],
-      locaisEntrega: List<String>.from(data['locaisEntrega'] ?? []),
+      locaisEntrega: (data['locaisEntrega'] as List<dynamic>?)
+              ?.map((e) => LocalEntrega.fromMap(e))
+              .toList() ??
+          [],
       dataCadastro: data['dataCadastro'],
       dataUltimaAlteracao: data['dataUltimaAlteracao'],
     );
@@ -57,7 +61,7 @@ class Empresa {
       'chavePix': chavePix,
       'descricao': descricao,
       'logomarca': logomarca,
-      'locaisEntrega': locaisEntrega,
+      'locaisEntrega': locaisEntrega.map((local) => local.toMap()).toList(),
       'dataCadastro': dataCadastro,
       'dataUltimaAlteracao': dataUltimaAlteracao,
     };
@@ -70,7 +74,7 @@ class Empresa {
     String? chavePix,
     String? descricao,
     String? logomarca,
-    List<String>? locaisEntrega,
+    List<LocalEntrega>? locaisEntrega,
     Timestamp? dataCadastro,
     Timestamp? dataUltimaAlteracao,
   }) {

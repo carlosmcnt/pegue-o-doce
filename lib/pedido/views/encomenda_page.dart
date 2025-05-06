@@ -225,9 +225,9 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                         },
                         items: empresa.locaisEntrega
                             .map((local) => DropdownMenuItem<String>(
-                                  value: local,
+                                  value: local.nome,
                                   child: Text(
-                                    local,
+                                    local.nome,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),

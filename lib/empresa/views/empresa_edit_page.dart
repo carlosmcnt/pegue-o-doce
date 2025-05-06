@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:pegue_o_doce/empresa/controllers/empresa_edit_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
+import 'package:pegue_o_doce/empresa/models/local_entrega.dart';
 import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
 import 'package:pegue_o_doce/usuario/services/usuario_service.dart';
 import 'package:pegue_o_doce/utils/snackbar_util.dart';
@@ -27,9 +31,14 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
   late TextEditingController _descricaoController;
   late TextEditingController _locaisEntregaController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late List<String> _locaisEntrega = [];
+  late List<LocalEntrega> _locaisEntrega = [];
+  final MapController _mapController = MapController();
+  LatLng coordenadaInicial = const LatLng(-13.0027, -38.5070);
+  double _zoom = 15;
   late String tipoChavePix = '';
   bool ignorarTipoChavePix = false;
+  LatLng? coordenadas;
+  bool mostrarMapa = false;
 
   Empresa get empresa => widget.empresa;
 
@@ -40,7 +49,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
     _chavePixController = TextEditingController(text: empresa.chavePix);
     _descricaoController = TextEditingController(text: empresa.descricao);
     _locaisEntregaController = TextEditingController();
-    _locaisEntrega = List<String>.from(empresa.locaisEntrega);
+    _locaisEntrega = empresa.locaisEntrega;
     if (_nomeFantasiaController.text.isNotEmpty) {
       ignorarTipoChavePix = true;
     }
@@ -55,10 +64,61 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
     super.dispose();
   }
 
+  Future<void> editarEmpresa() async {
+    final usuarioLogado =
+        await ref.read(usuarioServiceProvider).obterUsuarioLogado();
+
+    final empresaNova = empresa.copyWith(
+      nomeFantasia: _nomeFantasiaController.text,
+      chavePix: _chavePixController.text,
+      descricao: _descricaoController.text,
+      locaisEntrega: _locaisEntrega,
+      usuarioId: usuarioLogado.id,
+    );
+
+    await ref
+        .read(empresaEditControllerProvider.notifier)
+        .inserirOuAtualizarEmpresa(empresaNova);
+
+    ref.invalidate(empresaEditControllerProvider);
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => DadosEmpresaPage(
+          empresa: empresaNova,
+        ),
+      ),
+    );
+  }
+
+  void verificarLocalEntrega() {
+    if (_locaisEntregaController.text.isEmpty) {
+      SnackBarUtil.showSnackbar(
+          mensagem: 'Adicione um nome para o local de entrega',
+          context: context,
+          erro: true);
+      return;
+    }
+    if (coordenadas == null) {
+      SnackBarUtil.showSnackbar(
+          mensagem: 'Selecione o local no mapa', context: context, erro: true);
+      return;
+    }
+    setState(() {
+      _locaisEntrega.add(LocalEntrega(
+        nome: _locaisEntregaController.text,
+        coordenadas: coordenadas!,
+      ));
+      _locaisEntregaController.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.padrao('Incluir Empresa'),
+      appBar: Tema.padrao(
+        '${empresa.id == null ? 'Cadastrar ' : 'Atualizar '} Empresa',
+      ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Center(
@@ -169,13 +229,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                       icon: const Icon(FontAwesomeIcons.plus),
                       tooltip: 'Adicionar local de entrega',
                       onPressed: () {
-                        final local = _locaisEntregaController.text.trim();
-                        if (local.isNotEmpty) {
-                          setState(() {
-                            _locaisEntrega.add(local);
-                            _locaisEntregaController.clear();
-                          });
-                        }
+                        verificarLocalEntrega();
                       },
                     ),
                   ),
@@ -183,6 +237,19 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                     FormatadorLetrasMaiusculas(),
                   ],
                 ),
+                const SizedBox(height: 15),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      mostrarMapa = !mostrarMapa;
+                    });
+                  },
+                  icon: const Icon(FontAwesomeIcons.mapPin),
+                  label: Text(
+                      mostrarMapa ? 'Fechar mapa' : 'Selecionar local no mapa'),
+                ),
+                const SizedBox(height: 5),
+                mostrarMapaLocalEntrega(),
                 const SizedBox(height: 10),
                 const SizedBox(
                   height: 30,
@@ -194,7 +261,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                   children: [
                     for (var local in _locaisEntrega)
                       Chip(
-                        label: Text(local),
+                        label: Text(local.nome),
                         avatar: const Icon(FontAwesomeIcons.locationArrow),
                         deleteButtonTooltipMessage: 'Remover local de entrega',
                         onDeleted: () {
@@ -218,33 +285,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                         return;
                       }
 
-                      final usuarioLogado = await ref
-                          .read(usuarioServiceProvider)
-                          .obterUsuarioLogado();
-
-                      final empresaNova = empresa.copyWith(
-                        nomeFantasia: _nomeFantasiaController.text,
-                        chavePix: _chavePixController.text,
-                        descricao: _descricaoController.text,
-                        locaisEntrega: _locaisEntrega,
-                        usuarioId: usuarioLogado.id,
-                      );
-
-                      await ref
-                          .read(empresaEditControllerProvider.notifier)
-                          .inserirOuAtualizarEmpresa(empresaNova);
-
-                      if (!context.mounted) return;
-
-                      ref.invalidate(empresaEditControllerProvider);
-
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => DadosEmpresaPage(
-                            empresa: empresaNova,
-                          ),
-                        ),
-                      );
+                      editarEmpresa();
                     }
                   },
                   child: Text(empresa.id == null ? 'Cadastrar' : 'Atualizar'),
@@ -254,6 +295,103 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget mostrarMapaLocalEntrega() {
+    return AnimatedCrossFade(
+      duration: const Duration(milliseconds: 400),
+      crossFadeState:
+          mostrarMapa ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+      firstChild: Align(
+        alignment: Alignment.center,
+        child: FractionallySizedBox(
+          widthFactor: 0.9,
+          child: Stack(
+            children: [
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(2, 2),
+                    ),
+                  ],
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: coordenadaInicial,
+                    initialZoom: _zoom,
+                    onTap: (_, latlng) => setState(() => coordenadas = latlng),
+                  ),
+                  children: [
+                    TileLayer(
+                      tileProvider: CancellableNetworkTileProvider(),
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    ),
+                    if (coordenadas != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: coordenadas!,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.location_pin,
+                                color: Colors.red, size: 40),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Column(
+                  children: [
+                    FloatingActionButton.small(
+                      heroTag: 'zoom_in',
+                      onPressed: () {
+                        setState(() => _zoom++);
+                        _mapController.move(
+                            _mapController.camera.center, _zoom);
+                      },
+                      child: const Icon(Icons.zoom_in),
+                    ),
+                    const SizedBox(height: 8),
+                    FloatingActionButton.small(
+                      heroTag: 'zoom_out',
+                      onPressed: () {
+                        setState(() => _zoom--);
+                        _mapController.move(
+                            _mapController.camera.center, _zoom);
+                      },
+                      child: const Icon(Icons.zoom_out),
+                    ),
+                    const SizedBox(height: 8),
+                    FloatingActionButton.small(
+                      heroTag: 'recenter',
+                      onPressed: () {
+                        _mapController.move(coordenadaInicial, _zoom);
+                      },
+                      child: const Icon(Icons.my_location),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      secondChild: const SizedBox.shrink(),
     );
   }
 }

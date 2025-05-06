@@ -133,7 +133,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                       spacing: 8,
                       children: empresa.locaisEntrega
                           .map<Widget>((local) => Chip(
-                              label: Text(local),
+                              label: Text(local.nome),
                               backgroundColor: Colors.blue[50]))
                           .toList(),
                     ),

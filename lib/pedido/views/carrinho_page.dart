@@ -217,8 +217,8 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                             },
                             dropdownMenuEntries: locaisEntrega
                                 .map((local) => DropdownMenuEntry<String>(
-                                      value: local,
-                                      label: local,
+                                      value: local.nome,
+                                      label: local.nome,
                                     ))
                                 .toList(),
                           );

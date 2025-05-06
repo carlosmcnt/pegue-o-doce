@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:pegue_o_doce/empresa/controllers/dados_empresa_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/pedido/views/encomenda_page.dart';
@@ -223,23 +226,145 @@ class VisualizacaoEmpresaPageState
             Icon(FontAwesomeIcons.mapLocationDot),
             SizedBox(width: 10),
             Text(
-              "Locais de entrega",
+              "Locais de Entrega:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 8),
+            Tooltip(
+              message: "Clique no local para ver no mapa",
+              child: Icon(FontAwesomeIcons.circleInfo,
+                  size: 16, color: Colors.blue),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
-          children: empresa.locaisEntrega.map((local) {
-            return Chip(
-              avatar: const Icon(FontAwesomeIcons.locationDot, size: 16),
-              label: Text(local),
-              backgroundColor: Colors.blue[50],
-            );
-          }).toList(),
+          children: empresa.locaisEntrega.map(buildLocalEntregaChip).toList(),
         ),
         const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget buildLocalEntregaChip(local) {
+    return GestureDetector(
+      onTap: () => mostrarMapaLocalEntrega(context, local),
+      child: Chip(
+        avatar: const Icon(FontAwesomeIcons.locationDot,
+            size: 16, color: Colors.blue),
+        label: Text(local.nome),
+        backgroundColor: Colors.blue[30],
+        shadowColor: Colors.blue[200],
+        elevation: 3,
+      ),
+    );
+  }
+
+  void mostrarMapaLocalEntrega(BuildContext context, local) {
+    final mapController = MapController();
+    const initialZoom = 16.0;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              local.nome,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 250,
+              width: double.infinity,
+              child: buildMapaComControles(
+                  mapController, local.coordenadas, initialZoom),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildMapaComControles(
+      MapController mapController, LatLng coordenadas, double initialZoom) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: FlutterMap(
+            mapController: mapController,
+            options: MapOptions(
+              initialCenter: coordenadas,
+              initialZoom: initialZoom,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all,
+              ),
+            ),
+            children: [
+              TileLayer(
+                tileProvider: CancellableNetworkTileProvider(),
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: coordenadas,
+                    width: 40,
+                    height: 40,
+                    child: const Icon(
+                      FontAwesomeIcons.locationDot,
+                      color: Colors.red,
+                      size: 36,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Column(
+            children: [
+              FloatingActionButton(
+                mini: true,
+                heroTag: 'zoom_in_${coordenadas.latitude}',
+                onPressed: () {
+                  mapController.move(mapController.camera.center,
+                      mapController.camera.zoom + 1);
+                },
+                child: const Icon(Icons.zoom_in),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton(
+                mini: true,
+                heroTag: 'zoom_out_${coordenadas.longitude}',
+                onPressed: () {
+                  mapController.move(mapController.camera.center,
+                      mapController.camera.zoom - 1);
+                },
+                child: const Icon(Icons.zoom_out),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton(
+                mini: true,
+                heroTag: 'recenter_${coordenadas.latitude}',
+                onPressed: () {
+                  mapController.move(coordenadas, initialZoom);
+                },
+                child: const Icon(Icons.my_location),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

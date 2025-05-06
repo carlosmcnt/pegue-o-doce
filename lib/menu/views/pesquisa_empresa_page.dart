@@ -217,7 +217,15 @@ class PesquisaEmpresaPageState extends ConsumerState<PesquisaEmpresaPage> {
                       const Icon(Icons.location_on, size: 16),
                       const SizedBox(width: 4),
                       Expanded(
-                        child: Text(e.locaisEntrega.join(', ')),
+                        child: Text(
+                          e.locaisEntrega
+                              .asMap()
+                              .entries
+                              .map((e) => e.value.nome)
+                              .toList()
+                              .join(', '),
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ),
                     ],
                   ),
