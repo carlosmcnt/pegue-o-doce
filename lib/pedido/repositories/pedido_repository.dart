@@ -61,12 +61,13 @@ class PedidoRepository {
     return pedido.copyWith(id: docRef.id);
   }
 
-  Future<void> cancelarPedido(
-      String pedidoId, String motivoCancelamento) async {
+  Future<void> atualizarPedido(
+      String pedidoId, StatusPedido status, String? motivoCancelamento) async {
     await _firestore.collection('pedidos').doc(pedidoId).update({
-      'status': StatusPedido.CANCELADO.nome,
-      'motivoCancelamento': motivoCancelamento,
+      'status': status.nome,
       'dataUltimaAlteracao': Timestamp.now(),
+      if (motivoCancelamento != null && motivoCancelamento.isNotEmpty)
+        'motivoCancelamento': motivoCancelamento,
     });
   }
 }

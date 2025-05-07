@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // ignore: constant_identifier_names
-enum StatusPedido { TODOS, PENDENTE, CANCELADO, ENTREGUE, FINALIZADO }
+enum StatusPedido { TODOS, PENDENTE, CANCELADO, EM_ANDAMENTO, FINALIZADO }
 
 extension StatusPedidoExtension on StatusPedido {
   String get nome {
@@ -10,8 +10,8 @@ extension StatusPedidoExtension on StatusPedido {
         return 'Pendente';
       case StatusPedido.CANCELADO:
         return 'Cancelado';
-      case StatusPedido.ENTREGUE:
-        return 'Entregue';
+      case StatusPedido.EM_ANDAMENTO:
+        return 'Em Andamento';
       case StatusPedido.FINALIZADO:
         return 'Finalizado';
       default:
@@ -25,7 +25,7 @@ extension StatusPedidoExtension on StatusPedido {
         return Colors.orange;
       case StatusPedido.CANCELADO:
         return Colors.red;
-      case StatusPedido.ENTREGUE:
+      case StatusPedido.EM_ANDAMENTO:
         return Colors.blue;
       case StatusPedido.FINALIZADO:
         return Colors.green;

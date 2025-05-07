@@ -1,4 +1,5 @@
 import 'package:pegue_o_doce/empresa/services/empresa_service.dart';
+import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/services/pedido_service.dart';
@@ -33,13 +34,13 @@ class HistoricoPedidoController extends _$HistoricoPedidoController {
     }
   }
 
-  Future<void> cancelarPedido(String pedidoId, String motivoCancelamento,
-      bool isHistoricoEmpresa) async {
+  Future<void> atualizarPedido(
+      String pedidoId, StatusPedido status, String? motivoCancelamento) async {
     state = const AsyncValue.loading();
     try {
       await ref
           .read(pedidoServiceProvider)
-          .cancelarPedido(pedidoId, motivoCancelamento);
+          .atualizarPedido(pedidoId, status, motivoCancelamento);
       build(true);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -55,7 +56,7 @@ class HistoricoPedidoController extends _$HistoricoPedidoController {
     };
   }
 
-  Future<String> obterNomeClienteOuEmpresa(
+  Future<Map<String, String>> obterNomeClienteOuEmpresa(
       String pedidoId, bool isHistoricoEmpresa) async {
     if (isHistoricoEmpresa) {
       final pedido =
@@ -63,7 +64,10 @@ class HistoricoPedidoController extends _$HistoricoPedidoController {
       String idCliente = pedido?.usuarioClienteId ?? '';
       final cliente =
           await ref.read(usuarioServiceProvider).obterUsuarioPorId(idCliente);
-      return cliente.nomeCompleto;
+      return {
+        'nome': cliente.nomeCompleto,
+        'telefone': cliente.telefone,
+      };
     } else {
       final pedido =
           await ref.read(pedidoServiceProvider).getPedidoPorId(pedidoId);
@@ -71,7 +75,12 @@ class HistoricoPedidoController extends _$HistoricoPedidoController {
       final vendedor = await ref
           .read(empresaServiceProvider)
           .obterEmpresaPorUsuarioId(idVendedor);
-      return vendedor!.nomeFantasia;
+      final usuarioVendedor =
+          await ref.read(usuarioServiceProvider).obterUsuarioPorId(idVendedor);
+      return {
+        'nome': vendedor!.nomeFantasia,
+        'telefone': usuarioVendedor.telefone,
+      };
     }
   }
 }

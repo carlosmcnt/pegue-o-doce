@@ -11,6 +11,8 @@ import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/gerador_codigo_pedido.dart';
+import 'package:pegue_o_doce/utils/notificacao_utils.dart';
+import 'package:pegue_o_doce/utils/snackbar_util.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 
 class HistoricoPedidoPage extends ConsumerStatefulWidget {
@@ -49,7 +51,9 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
 
     return Scaffold(
       appBar: Tema.historicoPedido(
-        "Histórico de Pedidos",
+        widget.isHistoricoEmpresa
+            ? "Histórico de Vendas"
+            : "Histórico de Pedidos",
         [exibirFiltroStatus()],
       ),
       drawer: const MenuLateralWidget(),
@@ -95,7 +99,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
                               ),
                             ),
                             const SizedBox(height: 5),
-                            FutureBuilder<String>(
+                            FutureBuilder<Map<String, String>>(
                               future: ref
                                   .read(historicoPedidoControllerProvider(
                                           widget.isHistoricoEmpresa)
@@ -202,7 +206,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     );
   }
 
-  Widget exibirCardPedido(Pedido pedido, String nomePessoa) {
+  Widget exibirCardPedido(Pedido pedido, Map<String, String> infoPessoa) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -246,21 +250,42 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: () => detalharPedido(pedido, nomePessoa),
-                  child: const Text("Detalhes",
-                      style: TextStyle(color: Colors.purple)),
-                ),
-                if (pedido.status == StatusPedido.PENDENTE.nome)
+            Align(
+              alignment: Alignment.center,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                children: [
                   TextButton(
-                    onPressed: () => cancelarPedido(pedido),
-                    child: const Text("Cancelar pedido",
-                        style: TextStyle(color: Colors.red)),
+                    onPressed: () => detalharPedido(pedido, infoPessoa),
+                    child: const Text("Detalhes",
+                        style: TextStyle(color: Colors.purple)),
                   ),
-              ],
+                  if (pedido.status == StatusPedido.PENDENTE.nome)
+                    TextButton(
+                      onPressed: () => cancelarPedido(pedido),
+                      child: const Text("Cancelar pedido",
+                          style: TextStyle(color: Colors.red)),
+                    ),
+                  if (widget.isHistoricoEmpresa) ...[
+                    if (pedido.status == StatusPedido.PENDENTE.nome)
+                      TextButton(
+                        onPressed: () {
+                          aceitarPedido(pedido);
+                        },
+                        child: const Text("Aceitar Pedido",
+                            style: TextStyle(color: Colors.blue)),
+                      ),
+                    if (pedido.status == StatusPedido.EM_ANDAMENTO.nome)
+                      TextButton(
+                        onPressed: () {
+                          finalizarPedido(pedido);
+                        },
+                        child: const Text("Finalizar Pedido",
+                            style: TextStyle(color: Colors.green)),
+                      ),
+                  ]
+                ],
+              ),
             ),
           ],
         ),
@@ -348,7 +373,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     List<Pedido> vendasConcluidas = [];
     pedidosAsync.whenData((pedidos) {
       vendasConcluidas = pedidos
-          .where((pedido) => pedido.status == StatusPedido.PENDENTE.nome)
+          .where((pedido) => pedido.status == StatusPedido.FINALIZADO.nome)
           .toList();
     });
     double totalVendas =
@@ -399,7 +424,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     );
   }
 
-  void detalharPedido(Pedido pedido, String nomePessoa) {
+  void detalharPedido(Pedido pedido, Map<String, String> infoPessoa) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -409,10 +434,13 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(widget.isHistoricoEmpresa
-                  ? "Cliente: $nomePessoa"
-                  : "Vendedor: $nomePessoa"),
+                  ? "Cliente: ${infoPessoa['nome']} - ${infoPessoa['telefone']}"
+                  : "Empresa: ${infoPessoa['nome']} - ${infoPessoa['telefone']}"),
               const SizedBox(height: 8),
-              Text("Observação: ${pedido.observacao}"),
+              Text("Local de Entrega Selecionado: ${pedido.localRetirada}",
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text("Observação do pedido: ${pedido.observacao}"),
               const SizedBox(height: 8),
               const Text("Itens do pedido:"),
               for (var item in pedido.itensPedido)
@@ -434,6 +462,58 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text("Fechar"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void aceitarPedido(Pedido pedido) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title:
+            const Icon(FontAwesomeIcons.check, color: Colors.green, size: 40),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Confirmar Pedido",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Deseja confirmar o pedido? Uma notificação será enviada ao cliente.",
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Não"),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(historicoPedidoControllerProvider(
+                          widget.isHistoricoEmpresa)
+                      .notifier)
+                  .atualizarPedido(pedido.id!, StatusPedido.EM_ANDAMENTO, null);
+
+              NotificacaoUtils.enviarNotificacaoPedido(
+                  pedido.usuarioClienteId, ref, StatusPedido.EM_ANDAMENTO);
+
+              if (!context.mounted) return;
+
+              Navigator.of(context).pop();
+              SnackBarUtil.showSnackbar(
+                  mensagem: "Pedido confirmado com sucesso!",
+                  context: context,
+                  erro: false);
+            },
+            child: const Text("Sim"),
           ),
         ],
       ),
@@ -462,6 +542,10 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
             TextFormField(
               controller: _motivoCancelamentoController,
               decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  icon: const Icon(FontAwesomeIcons.broom),
+                  onPressed: () => _motivoCancelamentoController.clear(),
+                ),
                 labelText: "Digite o motivo:",
                 border:
                     OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -481,36 +565,87 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => _motivoCancelamentoController.clear(),
-            child: const Text("Limpar"),
-          ),
-          TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text("Não"),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_motivoCancelamentoController.text.isNotEmpty) {
-                ref
+                await ref
                     .read(historicoPedidoControllerProvider(
                             widget.isHistoricoEmpresa)
                         .notifier)
-                    .cancelarPedido(
-                      pedido.id!,
-                      _motivoCancelamentoController.text,
-                      widget.isHistoricoEmpresa,
-                    );
+                    .atualizarPedido(pedido.id!, StatusPedido.CANCELADO,
+                        _motivoCancelamentoController.text);
+
+                NotificacaoUtils.enviarNotificacaoPedido(
+                    pedido.usuarioClienteId, ref, StatusPedido.CANCELADO);
+
+                if (!context.mounted) return;
+
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Pedido cancelado com sucesso!")),
-                );
+                SnackBarUtil.showSnackbar(
+                    mensagem: "Pedido cancelado com sucesso!",
+                    context: context,
+                    erro: false);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                       content: Text("Motivo de cancelamento obrigatório")),
                 );
               }
+            },
+            child: const Text("Sim"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void finalizarPedido(Pedido pedido) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Icon(FontAwesomeIcons.checkDouble,
+            color: Colors.green, size: 40),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Finalizar Pedido",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Deseja finalizar o pedido? Ele será marcado como concluído e constará no saldo de vendas.",
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Não"),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(historicoPedidoControllerProvider(
+                          widget.isHistoricoEmpresa)
+                      .notifier)
+                  .atualizarPedido(pedido.id!, StatusPedido.FINALIZADO, null);
+
+              NotificacaoUtils.enviarNotificacaoPedido(
+                  pedido.usuarioClienteId, ref, StatusPedido.FINALIZADO);
+
+              if (!context.mounted) return;
+
+              Navigator.of(context).pop();
+              SnackBarUtil.showSnackbar(
+                  mensagem: "Pedido finalizado com sucesso!",
+                  context: context,
+                  erro: false);
             },
             child: const Text("Sim"),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/repositories/pedido_repository.dart';
@@ -34,9 +35,10 @@ class PedidoService {
     return await pedidoRepository.getPedidosPorVendedor(usuarioId);
   }
 
-  Future<void> cancelarPedido(
-      String pedidoId, String motivoCancelamento) async {
-    await pedidoRepository.cancelarPedido(pedidoId, motivoCancelamento);
+  Future<void> atualizarPedido(
+      String pedidoId, StatusPedido status, String? motivoCancelamento) async {
+    await pedidoRepository.atualizarPedido(
+        pedidoId, status, motivoCancelamento);
   }
 }
 

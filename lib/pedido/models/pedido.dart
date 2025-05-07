@@ -11,6 +11,7 @@ class Pedido {
   final double valorTotal;
   final String observacao;
   String? motivoCancelamento;
+  final String localRetirada;
   final bool isEncomenda;
   final Timestamp dataUltimaAlteracao;
 
@@ -23,6 +24,7 @@ class Pedido {
     required this.dataPedido,
     required this.valorTotal,
     required this.observacao,
+    required this.localRetirada,
     required this.motivoCancelamento,
     required this.isEncomenda,
     required this.dataUltimaAlteracao,
@@ -45,6 +47,7 @@ class Pedido {
       dataPedido: data['dataPedido'] ?? Timestamp.now(),
       valorTotal: data['valorTotal'] ?? 0.0,
       observacao: data['observacao'] ?? '',
+      localRetirada: data['localRetirada'] ?? '',
       motivoCancelamento: data['motivoCancelamento'] ?? '',
       isEncomenda: data['isEncomenda'] ?? false,
       dataUltimaAlteracao: data['dataUltimaAlteracao'] ?? Timestamp.now(),
@@ -60,6 +63,7 @@ class Pedido {
       'dataPedido': dataPedido,
       'valorTotal': valorTotal,
       'observacao': observacao,
+      'localRetirada': localRetirada,
       'motivoCancelamento': motivoCancelamento,
       'isEncomenda': isEncomenda,
       'dataUltimaAlteracao': dataUltimaAlteracao,
@@ -76,6 +80,7 @@ class Pedido {
     double? valorTotal,
     String? observacao,
     String? motivoCancelamento,
+    String? localRetirada,
     bool? isEncomenda,
     Timestamp? dataUltimaAlteracao,
   }) {
@@ -87,6 +92,7 @@ class Pedido {
       dataPedido: dataPedido ?? this.dataPedido,
       valorTotal: valorTotal ?? this.valorTotal,
       observacao: observacao ?? this.observacao,
+      localRetirada: localRetirada ?? this.localRetirada,
       motivoCancelamento: motivoCancelamento ?? this.motivoCancelamento,
       isEncomenda: isEncomenda ?? this.isEncomenda,
       dataUltimaAlteracao: dataUltimaAlteracao ?? this.dataUltimaAlteracao,

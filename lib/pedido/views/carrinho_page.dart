@@ -89,6 +89,7 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
       dataPedido: Timestamp.now(),
       valorTotal: precoTotal,
       observacao: _observacaoController.text,
+      localRetirada: localEntregaSelecionado!,
       isEncomenda: false,
       dataUltimaAlteracao: Timestamp.now(),
       motivoCancelamento: null,

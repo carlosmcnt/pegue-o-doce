@@ -169,7 +169,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                 ),
                 botaoAcaoEmpresa(
                   icon: FontAwesomeIcons.clockRotateLeft,
-                  label: 'Histórico de Pedidos',
+                  label: 'Histórico de Vendas',
                   color: Colors.purple,
                   onTap: () {
                     abrirPaginaHistoricoPedido();
