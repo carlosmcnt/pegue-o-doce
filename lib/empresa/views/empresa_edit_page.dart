@@ -9,7 +9,7 @@ import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/empresa/models/local_entrega.dart';
 import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
 import 'package:pegue_o_doce/usuario/services/usuario_service.dart';
-import 'package:pegue_o_doce/utils/snackbar_util.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 import 'package:pegue_o_doce/utils/validador.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
@@ -93,14 +93,14 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
 
   void verificarLocalEntrega() {
     if (_locaisEntregaController.text.isEmpty) {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
           mensagem: 'Adicione um nome para o local de entrega',
           context: context,
           erro: true);
       return;
     }
     if (coordenadas == null) {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
           mensagem: 'Selecione o local no mapa', context: context, erro: true);
       return;
     }
@@ -126,6 +126,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
             key: _formKey,
             child: ListView(
               children: [
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: _nomeFantasiaController,
                   maxLength: 40,
@@ -277,7 +278,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       if (_locaisEntrega.isEmpty) {
-                        SnackBarUtil.showSnackbar(
+                        WidgetUtils.showSnackbar(
                             mensagem:
                                 'Selecione pelo menos um local de entrega',
                             context: context,

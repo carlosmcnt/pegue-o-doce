@@ -167,7 +167,7 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                         produtos = snapshot.data!;
                         return retornarListaProdutos();
                       } else {
-                        return const Text('Nenhum produto encontrado.');
+                        return const Text('Nenhum produto encontrado');
                       }
                     },
                   ),
@@ -233,7 +233,9 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (carrinho.cartItemsList.isEmpty)
-                const Text('Carrinho vazio.')
+                const Center(
+                    child:
+                        Text('Carrinho vazio', style: TextStyle(fontSize: 20)))
               else
                 Flexible(
                   child: ListView.builder(

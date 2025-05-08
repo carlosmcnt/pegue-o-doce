@@ -79,6 +79,56 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
     );
   }
 
+  void deletarProduto(Produto produto) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title:
+            const Icon(FontAwesomeIcons.trashCan, color: Colors.red, size: 40),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Excluir Produto",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Tem certeza que deseja excluir este produto?",
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 5),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ref
+                  .read(produtoListControllerProvider.notifier)
+                  .deletarProduto(produto);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Produto excluído com sucesso!'),
+                ),
+              );
+
+              atualizarPagina();
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final listaProdutos = ref.watch(dadosEmpresaControllerProvider);
@@ -86,7 +136,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
     final produtosAgrupados = agruparProdutosPorTipo(listaProdutos.value ?? []);
 
     return Scaffold(
-      appBar: Tema.padrao('Minha Empresa'),
+      appBar: Tema.padrao('Perfil Empresa'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -129,13 +179,16 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: empresa.locaisEntrega
-                          .map<Widget>((local) => Chip(
-                              label: Text(local.nome),
-                              backgroundColor: Colors.blue[50]))
-                          .toList(),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Wrap(
+                        spacing: 8,
+                        children: empresa.locaisEntrega
+                            .map<Widget>((local) => Chip(
+                                label: Text(local.nome),
+                                backgroundColor: Colors.blue[50]))
+                            .toList(),
+                      ),
                     ),
                   ],
                 ),
@@ -153,7 +206,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
               children: [
                 botaoAcaoEmpresa(
                   icon: FontAwesomeIcons.circlePlus,
-                  label: 'Novo Produto',
+                  label: 'Cadastro de Produto',
                   color: Colors.green,
                   onTap: () {
                     abrirPaginaIncluirEditarProduto();
@@ -161,7 +214,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                 ),
                 botaoAcaoEmpresa(
                   icon: FontAwesomeIcons.penToSquare,
-                  label: 'Editar Empresa',
+                  label: 'Edição de Empresa',
                   color: Colors.orange,
                   onTap: () {
                     abrirPaginaEditarEmpresa();
@@ -178,7 +231,10 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
               ],
             ),
             const SizedBox(height: 24),
-            const Divider(),
+            const Divider(
+              color: Colors.black,
+              thickness: 1.5,
+            ),
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -192,7 +248,8 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                 margin: const EdgeInsets.only(bottom: 16),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
-                elevation: 2,
+                elevation: 4,
+                shadowColor: Colors.black,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -204,22 +261,42 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                       const Divider(),
                       ...entry.value.map((produto) {
                         return ListTile(
+                          isThreeLine: true,
                           leading: const Icon(FontAwesomeIcons.utensils,
                               color: Colors.deepOrange),
-                          title: Text(produto.sabor),
-                          subtitle: Text(FormatadorMoedaReal.formatarValorReal(
-                              produto.valorUnitario)),
-                          trailing: const Icon(Icons.edit),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => ProdutoEditPage(
-                                  produto: produto,
-                                  empresa: empresa,
-                                ),
+                          title: Text('Sabor: ${produto.sabor}'),
+                          subtitle: Text(
+                              FormatadorMoedaReal.formatarValorReal(
+                                  produto.valorUnitario),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.grey[700])),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: 'Editar Produto',
+                                icon: Icon(FontAwesomeIcons.penToSquare,
+                                    color: Colors.yellow[800]),
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ProdutoEditPage(
+                                        produto: produto,
+                                        empresa: empresa,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
+                              IconButton(
+                                tooltip: 'Excluir Produto',
+                                icon: const Icon(FontAwesomeIcons.trashCan),
+                                onPressed: () {
+                                  deletarProduto(produto);
+                                },
+                              ),
+                            ],
+                          ),
                         );
                       }),
                     ],
@@ -262,96 +339,6 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget organizarProdutosPorTipo(
-      BuildContext context, String tipo, List<Produto> produtos) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              tipo.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(),
-            Column(
-              children: produtos
-                  .map(
-                    (produto) => ListTile(
-                      leading: const Icon(FontAwesomeIcons.box),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
-                      title: Text(produto.sabor,
-                          style: const TextStyle(fontSize: 20)),
-                      subtitle: Text(
-                          FormatadorMoedaReal.formatarValorReal(
-                              produto.valorUnitario),
-                          style: const TextStyle(fontSize: 16)),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => ProdutoEditPage(
-                            produto: produto,
-                            empresa: empresa,
-                          ),
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_forever),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Excluir Produto'),
-                              content: const Text(
-                                  'Tem certeza que deseja excluir este produto?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Cancelar'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    ref
-                                        .read(produtoListControllerProvider
-                                            .notifier)
-                                        .deletarProduto(produto);
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Produto excluído com sucesso!'),
-                                      ),
-                                    );
-
-                                    atualizarPagina();
-                                  },
-                                  child: const Text('Excluir'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
         ),
       ),
     );

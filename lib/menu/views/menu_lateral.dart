@@ -77,7 +77,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
           ),
           ListTile(
             leading: const Icon(FontAwesomeIcons.gear),
-            title: const Text("Minhas Configurações"),
+            title: const Text("Configurações"),
             onTap: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (context) => ConfiguracaoPage(
@@ -128,7 +128,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
             },
           ),
           ListTile(
-            leading: const Icon(FontAwesomeIcons.heartPulse),
+            leading: const Icon(FontAwesomeIcons.heart),
             title: const Text("Empresas Favoritas"),
             onTap: () {
               Navigator.of(context).pushReplacement(
@@ -168,9 +168,30 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
 
   AlertDialog dialogoConfirmacaoSaida(BuildContext context, WidgetRef ref) {
     return AlertDialog(
-      title: const Text('Saída'),
-      content: const Text('Deseja realmente sair?'),
-      actions: <Widget>[
+      title: const Icon(FontAwesomeIcons.rightFromBracket,
+          color: Colors.red, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Sair",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Deseja realmente sair?",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Não'),
+        ),
         TextButton(
           onPressed: () {
             ref.read(usuarioServiceProvider).logout();
@@ -181,12 +202,6 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
             );
           },
           child: const Text('Sim'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Não'),
         ),
       ],
     );

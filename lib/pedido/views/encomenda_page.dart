@@ -11,7 +11,7 @@ import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/notificacao_utils.dart';
-import 'package:pegue_o_doce/utils/snackbar_util.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 
 class EncomendaPage extends ConsumerStatefulWidget {
@@ -106,7 +106,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
     Navigator.pop(context);
 
-    SnackBarUtil.showSnackbar(
+    WidgetUtils.showSnackbar(
       mensagem: 'Encomenda enviada com sucesso!',
       context: context,
       erro: false,
@@ -143,6 +143,9 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
               key: _formKey,
               child: Column(
                 children: [
+                  WidgetUtils.textoInformacao(
+                      'Selecione o tipo de produto, a quantidade e o local de retirada para realizar a encomenda. O pagamento será feito na retirada.'),
+                  const SizedBox(height: 5),
                   if (quantidadeTotal < 10)
                     Container(
                       padding: const EdgeInsets.all(12),

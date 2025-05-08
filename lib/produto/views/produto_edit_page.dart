@@ -87,7 +87,9 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.padrao('Incluir/Editar Produto'),
+      appBar: Tema.padrao(
+        produto.id == null ? 'Cadastrar Produto' : 'Editar Produto',
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -315,6 +317,12 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 onPressed: () async {
                   if (!_formKey.currentState!.validate()) {
                     return;

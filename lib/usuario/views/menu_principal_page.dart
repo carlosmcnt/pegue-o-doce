@@ -7,6 +7,7 @@ import 'package:pegue_o_doce/categoria/repositories/categoria_repository.dart';
 import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/menu/views/pesquisa_empresa_page.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class MenuPrincipalPage extends ConsumerStatefulWidget {
   const MenuPrincipalPage({super.key});
@@ -99,19 +100,16 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
   }
 
   Widget retornarCabecalho() {
-    return const Column(
+    return Column(
       children: [
-        Text(
-          'Bem-vindo ao Pegue o Doce!\nEscolha uma categoria',
+        const Text(
+          'Bem-vindo ao Pegue o Doce!',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 4),
-        Text(
-          'Filtre e selecione uma categoria para visualizar mais detalhes.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14, color: Colors.grey),
-        ),
+        const SizedBox(height: 5),
+        WidgetUtils.textoInformacao(
+            'Faça uma pesquisa por categoria e encontre empresas que oferecem produtos relacionados.'),
       ],
     );
   }
@@ -151,7 +149,7 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           '${categoriasEmExibicao.length} resultado(s) para "$textoPesquisa"',
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
+          style: TextStyle(fontSize: 14, color: Colors.grey[800]),
         ),
       ),
     );
@@ -162,7 +160,7 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
       return Center(
         child: Text(
           textoPesquisa.isEmpty
-              ? 'Nenhuma categoria disponível.'
+              ? 'Nenhuma categoria disponível'
               : 'Nenhum resultado para "$textoPesquisa"',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,

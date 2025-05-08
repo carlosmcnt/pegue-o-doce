@@ -80,10 +80,19 @@ class VisualizacaoEmpresaPageState
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        Text(
-          empresa.descricao,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16, color: Colors.black54),
+        Row(
+          children: [
+            const Icon(FontAwesomeIcons.circleInfo, color: Colors.blue),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                empresa.descricao,
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.justify,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -102,7 +111,7 @@ class VisualizacaoEmpresaPageState
         botaoAcao(
           label: "Pedido",
           icon: FontAwesomeIcons.cartShopping,
-          color: Colors.teal[600],
+          color: Colors.red[400],
           onPressed: () {
             Navigator.push(
               context,
@@ -128,7 +137,7 @@ class VisualizacaoEmpresaPageState
         botaoAcao(
           label: "Favoritar",
           icon: FontAwesomeIcons.star,
-          color: Colors.red[600],
+          color: Colors.yellow[700],
           onPressed: () {
             showDialog(
               context: context,
@@ -196,7 +205,7 @@ class VisualizacaoEmpresaPageState
                   subtitle: Text(
                     FormatadorMoedaReal.formatarValorReal(
                         produto.valorUnitario),
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey[700]),
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {

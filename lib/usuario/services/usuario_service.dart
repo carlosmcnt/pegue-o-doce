@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/usuario/repositories/usuario_repository.dart';
-import 'package:pegue_o_doce/utils/snackbar_util.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 part 'usuario_service.g.dart';
 
@@ -18,14 +18,14 @@ class UsuarioService {
     final resultado =
         await usuarioRepository.entrar(email: email, senha: senha);
     if (resultado == true) {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
         mensagem: 'Login realizado com sucesso!',
         context: context,
         erro: false,
       );
       return true;
     } else {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
         mensagem: resultado,
         context: context,
         erro: true,
@@ -41,13 +41,13 @@ class UsuarioService {
   Future<dynamic> redefinirSenha(String email, BuildContext context) async {
     final resultado = await usuarioRepository.redefinirSenha(email: email);
     if (resultado == true) {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
         mensagem: 'Redefinição de senha enviada para o e-mail!',
         context: context,
         erro: false,
       );
     } else {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
         mensagem: resultado,
         context: context,
         erro: true,
@@ -72,14 +72,14 @@ class UsuarioService {
       token: token ?? '',
     );
     if (resultado == true) {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
         mensagem: 'Cadastro realizado com sucesso!',
         context: context,
         erro: false,
       );
       return true;
     } else {
-      SnackBarUtil.showSnackbar(
+      WidgetUtils.showSnackbar(
         mensagem: resultado,
         context: context,
         erro: true,

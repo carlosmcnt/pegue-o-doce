@@ -13,6 +13,7 @@ import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class CarrinhoPage extends ConsumerStatefulWidget {
   const CarrinhoPage({super.key});
@@ -121,6 +122,11 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: WidgetUtils.textoInformacao(
+                        'Verifique os itens do seu pedido e finalize a compra. O pagamento será realizado na entrega.'),
+                  ),
+                  const SizedBox(height: 5),
                   const Center(
                     child: Text(
                       "Resumo do Pedido",
@@ -279,7 +285,7 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                       ElevatedButton.icon(
                         onPressed: () {
                           setState(() {
-                            produtosNoCarrinho.clear();
+                            carrinho.clearCart();
                           });
 
                           ScaffoldMessenger.of(context).showSnackBar(

@@ -12,7 +12,7 @@ import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/gerador_codigo_pedido.dart';
 import 'package:pegue_o_doce/utils/notificacao_utils.dart';
-import 'package:pegue_o_doce/utils/snackbar_util.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 
 class HistoricoPedidoPage extends ConsumerStatefulWidget {
@@ -508,7 +508,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               if (!context.mounted) return;
 
               Navigator.of(context).pop();
-              SnackBarUtil.showSnackbar(
+              WidgetUtils.showSnackbar(
                   mensagem: "Pedido confirmado com sucesso!",
                   context: context,
                   erro: false);
@@ -584,7 +584,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
                 if (!context.mounted) return;
 
                 Navigator.of(context).pop();
-                SnackBarUtil.showSnackbar(
+                WidgetUtils.showSnackbar(
                     mensagem: "Pedido cancelado com sucesso!",
                     context: context,
                     erro: false);
@@ -642,7 +642,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               if (!context.mounted) return;
 
               Navigator.of(context).pop();
-              SnackBarUtil.showSnackbar(
+              WidgetUtils.showSnackbar(
                   mensagem: "Pedido finalizado com sucesso!",
                   context: context,
                   erro: false);

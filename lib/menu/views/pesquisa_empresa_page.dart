@@ -133,13 +133,25 @@ class PesquisaEmpresaPageState extends ConsumerState<PesquisaEmpresaPage> {
   }
 
   Widget retornarCabecalho() => Container(
-        width: double.infinity,
-        color: Colors.grey[300],
-        padding: const EdgeInsets.all(8),
-        child: Text(
-          'CATEGORIA: ${categoria.nome}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.green.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(FontAwesomeIcons.check,
+                size: 20, color: Colors.green.shade800),
+            Expanded(
+              child: Text(
+                'CATEGORIA SELECIONADA: ${categoria.nome}',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       );
 
@@ -176,7 +188,7 @@ class PesquisaEmpresaPageState extends ConsumerState<PesquisaEmpresaPage> {
           alignment: Alignment.centerLeft,
           child: Text(
             '$count resultado(s)',
-            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            style: TextStyle(fontSize: 14, color: Colors.grey[800]),
           ),
         ),
       );

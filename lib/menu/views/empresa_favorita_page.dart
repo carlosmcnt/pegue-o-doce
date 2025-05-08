@@ -6,6 +6,7 @@ import 'package:pegue_o_doce/menu/controllers/empresa_favorita_controller.dart';
 import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 import 'package:pegue_o_doce/empresa/views/visualizacao_empresa.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class EmpresaFavoritaPage extends ConsumerStatefulWidget {
   const EmpresaFavoritaPage({super.key});
@@ -34,12 +35,16 @@ class EmpresaFavoritaPageState extends ConsumerState<EmpresaFavoritaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.padrao('Minhas Empresas Favoritas'),
+      appBar: Tema.padrao('Empresas Favoritas'),
       body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Center(
             child: Column(
               children: [
+                const SizedBox(height: 10),
+                WidgetUtils.textoInformacao(
+                    'Clique na empresa desejada para visualizar mais detalhes e realizar alguma ação. Clique no ícone de lixeira para remover a empresa dos favoritos.'),
+                const SizedBox(height: 10),
                 Expanded(
                   child: FutureBuilder<List<Empresa>>(
                     future: listaEmpresas,
@@ -76,11 +81,7 @@ class EmpresaFavoritaPageState extends ConsumerState<EmpresaFavoritaPage> {
                 trailing: IconButton(
                   icon: const Icon(Icons.delete),
                   onPressed: () async {
-                    showDialog(
-                      context: context,
-                      builder: (context) =>
-                          alertaRemocaoEmpresaFavorita(context, empresa),
-                    );
+                    alertaRemocaoEmpresaFavorita(context, empresa);
                   },
                 ),
               ),
@@ -106,40 +107,55 @@ class EmpresaFavoritaPageState extends ConsumerState<EmpresaFavoritaPage> {
     }
   }
 
-  AlertDialog alertaRemocaoEmpresaFavorita(
+  Future<void> alertaRemocaoEmpresaFavorita(
       BuildContext context, Empresa empresa) {
-    return AlertDialog(
-      title:
-          const Icon(FontAwesomeIcons.heartCrack, color: Colors.red, size: 50),
-      content: Text(
-          'Deseja realmente remover a empresa ${empresa.nomeFantasia} dos favoritos?'),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancelar'),
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Icon(FontAwesomeIcons.heartCircleXmark,
+            color: Colors.red, size: 40),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Remover Empresa",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Deseja realmente remover a empresa ${empresa.nomeFantasia} dos favoritos?",
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 5),
+          ],
         ),
-        TextButton(
-          onPressed: () async {
-            await ref
-                .read(empresaFavoritaControllerProvider.notifier)
-                .removerEmpresaFavorita(empresa.id!);
-            setState(() {
-              listaEmpresas = obterListaEmpresasFavoritas();
-            });
-            if (!context.mounted) return;
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Empresa removida dos favoritos'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          },
-          child: const Text('Remover'),
-        ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(empresaFavoritaControllerProvider.notifier)
+                  .removerEmpresaFavorita(empresa.id!);
+              setState(() {
+                listaEmpresas = obterListaEmpresasFavoritas();
+              });
+              if (!context.mounted) return;
+              Navigator.of(context).pop();
+              WidgetUtils.showSnackbar(
+                mensagem: 'Empresa removida dos favoritos',
+                context: context,
+                erro: false,
+              );
+            },
+            child: const Text('Remover'),
+          ),
+        ],
+      ),
     );
   }
 }

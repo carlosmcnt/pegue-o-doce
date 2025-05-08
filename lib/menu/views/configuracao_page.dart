@@ -9,9 +9,9 @@ import 'package:pegue_o_doce/menu/controllers/menu_lateral_controller.dart';
 import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/menu/controllers/dados_usuario_controller.dart';
-import 'package:pegue_o_doce/usuario/views/menu_principal_page.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class ConfiguracaoPage extends ConsumerStatefulWidget {
   const ConfiguracaoPage({super.key, required this.usuario});
@@ -60,6 +60,9 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
+              WidgetUtils.textoInformacao(
+                  'Para alterar os dados, clique no botão Editar. Após as alterações, clique em Salvar.'),
+              const SizedBox(height: 15),
               ListView(
                 shrinkWrap: true,
                 children: [
@@ -146,11 +149,13 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
                           backgroundColor: Colors.red,
                         ),
                         label: const Text('Cancelar'),
-                        onPressed: () {
-                          setState(() {
-                            habilitarEdicao = false;
-                          });
-                        },
+                        onPressed: habilitarEdicao
+                            ? () {
+                                setState(() {
+                                  habilitarEdicao = false;
+                                });
+                              }
+                            : null,
                       ),
                     ],
                   ),
@@ -164,11 +169,16 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
                             ConnectionState.waiting) {
                           return const CircularProgressIndicator();
                         } else if (snapshot.hasError) {
-                          return const Text(
-                              'Erro ao verificar existência de empresa');
+                          return const SizedBox.shrink();
                         } else {
                           if (snapshot.data != null) {
                             return ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
                               onPressed: () {
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
@@ -210,10 +220,30 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
     final usuario =
         ref.watch(menuLateralControllerProvider).whenData((usuario) => usuario);
     return AlertDialog(
-      title: const Text('Criação de Empresa'),
-      content: const Text(
-          'Você ainda não possui um perfil de empresa. Deseja criar um agora?'),
-      actions: <Widget>[
+      title: const Icon(FontAwesomeIcons.building,
+          color: Colors.greenAccent, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Criação de Empresa",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Você ainda não possui um perfil de empresa. Deseja criar um agora?",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Não'),
+        ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pushReplacement(
@@ -226,20 +256,28 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
           },
           child: const Text('Sim'),
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Não'),
-        ),
       ],
     );
   }
 
   AlertDialog dialogoConfirmacaoAlteracao(BuildContext context, WidgetRef ref) {
     return AlertDialog(
-      title: const Text('Alterar Dados'),
-      content: const Text('Deseja realmente confirmar as alterações?'),
+      title: const Icon(FontAwesomeIcons.check, color: Colors.green, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Alteração de Dados",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Deseja realmente confirmar as alterações?",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
       actions: <Widget>[
         TextButton(
           onPressed: () async {
@@ -259,7 +297,9 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
 
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const MenuPrincipalPage(),
+                builder: (context) => ConfiguracaoPage(
+                  usuario: novoUsuario,
+                ),
               ),
             );
           },
