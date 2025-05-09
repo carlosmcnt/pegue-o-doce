@@ -8,6 +8,7 @@ import 'package:pegue_o_doce/menu/views/configuracao_page.dart';
 import 'package:pegue_o_doce/menu/views/empresa_favorita_page.dart';
 import 'package:pegue_o_doce/pedido/views/carrinho_page.dart';
 import 'package:pegue_o_doce/pedido/views/historico_pedido_page.dart';
+import 'package:pegue_o_doce/pergunta/views/perguntas_frequentes_page.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/usuario/services/usuario_service.dart';
 import 'package:pegue_o_doce/usuario/views/login_page.dart';
@@ -145,6 +146,17 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const CarrinhoPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(FontAwesomeIcons.question),
+            title: const Text("Perguntas Frequentes"),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const PerguntasFrequentesPage(),
                 ),
               );
             },
