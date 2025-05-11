@@ -14,6 +14,24 @@ class WidgetUtils {
     ScaffoldMessenger.of(context).showSnackBar(snackbar);
   }
 
+  static void showLoadingDialog(BuildContext context, {String? mensagem}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Text(mensagem ?? 'Carregando...'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   static SizedBox textoInformacao(String texto) {
     return SizedBox(
       child: Container(

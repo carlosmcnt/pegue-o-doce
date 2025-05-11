@@ -12,18 +12,18 @@ import 'package:pegue_o_doce/produto/views/produto_edit_page.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 
-class DadosEmpresaPage extends ConsumerStatefulWidget {
+class PerfilEmpresaPage extends ConsumerStatefulWidget {
   final Empresa empresa;
 
-  const DadosEmpresaPage({super.key, required this.empresa});
+  const PerfilEmpresaPage({super.key, required this.empresa});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
-    return DadosEmpresaPageState();
+    return PerfilEmpresaPageState();
   }
 }
 
-class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
+class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
   Empresa get empresa => widget.empresa;
 
   @override
@@ -45,7 +45,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
   void atualizarPagina() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => DadosEmpresaPage(empresa: empresa),
+        builder: (context) => PerfilEmpresaPage(empresa: empresa),
       ),
     );
   }
@@ -174,7 +174,7 @@ class DadosEmpresaPageState extends ConsumerState<DadosEmpresaPage> {
                         Icon(FontAwesomeIcons.locationDot,
                             color: Colors.deepPurple),
                         SizedBox(width: 8),
-                        Text('LOCAIS DE ENTREGA:',
+                        Text('LOCAIS DE ENTREGA ATUAIS:',
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),

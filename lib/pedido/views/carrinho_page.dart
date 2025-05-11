@@ -10,8 +10,11 @@ import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
+import 'package:pegue_o_doce/pedido/views/historico_pedido_page.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
+import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
+import 'package:pegue_o_doce/utils/notificacao_utils.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
 import 'package:pegue_o_doce/utils/widget_utils.dart';
 
@@ -80,27 +83,64 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
     return total;
   }
 
-  Future<void> enviarEncomenda(
+  void limparCarrinhoFinalPedido() {
+    setState(() {
+      carrinho.clearCart();
+    });
+  }
+
+  Future<void> enviarPedido(
       List<ItemPedido> itens, BuildContext context) async {
-    final pedido = Pedido(
-      usuarioClienteId: await idUsuarioLogado,
-      usuarioVendedorId: await empresa.then((value) => value.usuarioId),
-      itensPedido: itens,
-      status: StatusPedido.PENDENTE.nome,
-      dataPedido: Timestamp.now(),
-      valorTotal: precoTotal,
-      observacao: _observacaoController.text,
-      localRetirada: localEntregaSelecionado!,
-      isEncomenda: false,
-      dataUltimaAlteracao: Timestamp.now(),
-      motivoCancelamento: null,
-    );
+    WidgetUtils.showLoadingDialog(context, mensagem: "Enviando pedido...");
 
-    await ref.read(encomendaControllerProvider.notifier).inserirPedido(pedido);
+    try {
+      final pedido = Pedido(
+        usuarioClienteId: await idUsuarioLogado,
+        usuarioVendedorId: await empresa.then((value) => value.usuarioId),
+        itensPedido: itens,
+        status: StatusPedido.PENDENTE.nome,
+        dataPedido: Timestamp.now(),
+        valorTotal: precoTotal,
+        observacao: _observacaoController.text,
+        localRetirada: localEntregaSelecionado!,
+        isEncomenda: false,
+        dataUltimaAlteracao: Timestamp.now(),
+        motivoCancelamento: null,
+      );
 
-    if (!context.mounted) return;
+      Usuario usuarioVendedor = await ref
+          .read(encomendaControllerProvider.notifier)
+          .obterUsuarioPorId(pedido.usuarioVendedorId);
 
-    Navigator.of(context).pop();
+      await ref
+          .read(encomendaControllerProvider.notifier)
+          .inserirPedido(pedido);
+
+      if (!context.mounted) return;
+
+      WidgetUtils.showSnackbar(
+        mensagem: "Pedido enviado com sucesso!",
+        context: context,
+        erro: false,
+      );
+
+      NotificacaoUtils.enviarNotificacaoPush(token: usuarioVendedor.token!);
+
+      limparCarrinhoFinalPedido();
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              const HistoricoPedidoPage(isHistoricoEmpresa: false),
+        ),
+      );
+    } on Exception catch (e) {
+      WidgetUtils.showSnackbar(
+        mensagem: "Erro ao enviar o pedido: $e",
+        context: context,
+        erro: true,
+      );
+    }
   }
 
   @override
@@ -187,6 +227,7 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                       },
                     ),
                   ),
+                  const SizedBox(height: 16),
                   Wrap(
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
@@ -284,17 +325,10 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {
-                          setState(() {
-                            carrinho.clearCart();
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Carrinho limpo!"),
-                              duration: Duration(seconds: 2),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          showDialog(
+                              context: context,
+                              builder: (context) =>
+                                  dialogoLimparCarrinho(context));
                         },
                         icon: const Icon(FontAwesomeIcons.trashCan),
                         label: const Text("Limpar Carrinho"),
@@ -304,10 +338,25 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
                       ),
                       ElevatedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Pedido enviado!"),
-                            ),
+                          if (localEntregaSelecionado == null) {
+                            WidgetUtils.showSnackbar(
+                              mensagem: "Selecione um local de entrega.",
+                              context: context,
+                              erro: true,
+                            );
+                            return;
+                          }
+                          if (_observacaoController.text.isEmpty) {
+                            WidgetUtils.showSnackbar(
+                              mensagem: "Adicione uma observação.",
+                              context: context,
+                              erro: true,
+                            );
+                            return;
+                          }
+                          showDialog(
+                            context: context,
+                            builder: (context) => dialogoEnviarPedido(context),
                           );
                         },
                         icon: const Icon(FontAwesomeIcons.check),
@@ -322,6 +371,83 @@ class CarrinhoPageState extends ConsumerState<CarrinhoPage> {
               ),
       ),
       drawer: const MenuLateralWidget(),
+    );
+  }
+
+  AlertDialog dialogoEnviarPedido(BuildContext context) {
+    return AlertDialog(
+      title: const Icon(FontAwesomeIcons.check, color: Colors.green, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Enviar Pedido",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Deseja realmente enviar o pedido? \nEssa ação não pode ser desfeita.",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Cancelar"),
+        ),
+        TextButton(
+          onPressed: () {
+            enviarPedido(listaItensCarrinho, context);
+          },
+          child: const Text("Enviar"),
+        ),
+      ],
+    );
+  }
+
+  AlertDialog dialogoLimparCarrinho(BuildContext context) {
+    return AlertDialog(
+      title: const Icon(FontAwesomeIcons.broom, color: Colors.red, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Limpar Carrinho",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Deseja realmente limpar o carrinho? \nEssa ação não pode ser desfeita.",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text("Cancelar"),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              carrinho.clearCart();
+            });
+            Navigator.of(context).pop();
+            WidgetUtils.showSnackbar(
+                mensagem: "Carrinho limpo com sucesso!",
+                context: context,
+                erro: false);
+          },
+          child: const Text("Limpar"),
+        ),
+      ],
     );
   }
 }

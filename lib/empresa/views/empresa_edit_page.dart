@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:pegue_o_doce/empresa/controllers/empresa_edit_controller.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
 import 'package:pegue_o_doce/empresa/models/local_entrega.dart';
-import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
+import 'package:pegue_o_doce/empresa/views/perfil_empresa.dart';
 import 'package:pegue_o_doce/usuario/services/usuario_service.dart';
 import 'package:pegue_o_doce/utils/widget_utils.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
@@ -30,6 +31,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
   late TextEditingController _chavePixController;
   late TextEditingController _descricaoController;
   late TextEditingController _locaisEntregaController;
+  late TextEditingController _quantidadeMinimaEncomendaController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late List<LocalEntrega> _locaisEntrega = [];
   final MapController _mapController = MapController();
@@ -48,6 +50,8 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
     _nomeFantasiaController = TextEditingController(text: empresa.nomeFantasia);
     _chavePixController = TextEditingController(text: empresa.chavePix);
     _descricaoController = TextEditingController(text: empresa.descricao);
+    _quantidadeMinimaEncomendaController = TextEditingController(
+        text: empresa.quantidadeMinimaEncomenda.toString());
     _locaisEntregaController = TextEditingController();
     _locaisEntrega = empresa.locaisEntrega;
     if (_nomeFantasiaController.text.isNotEmpty) {
@@ -71,6 +75,8 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
     final empresaNova = empresa.copyWith(
       nomeFantasia: _nomeFantasiaController.text,
       chavePix: _chavePixController.text,
+      quantidadeMinimaEncomenda:
+          int.parse(_quantidadeMinimaEncomendaController.text),
       descricao: _descricaoController.text,
       locaisEntrega: _locaisEntrega,
       usuarioId: usuarioLogado.id,
@@ -84,7 +90,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => DadosEmpresaPage(
+        builder: (context) => PerfilEmpresaPage(
           empresa: empresaNova,
         ),
       ),
@@ -214,6 +220,29 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
                   },
                   minLines: 3,
                   maxLines: 5,
+                ),
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: _quantidadeMinimaEncomendaController,
+                  maxLength: 2,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                  decoration: InputDecoration(
+                    labelText: 'Quantidade mínima de itens para encomenda:',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    prefixIcon: const Icon(FontAwesomeIcons.cartPlus),
+                    helperText: 'Ex: 2, 3, 4...',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'A quantidade mínima de itens é obrigatória';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 15),
                 TextFormField(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ import 'package:pegue_o_doce/usuario/models/usuario_empresa.dart';
 import 'package:pegue_o_doce/usuario/repositories/usuario_empresa_repository.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class VisualizacaoEmpresaPage extends ConsumerStatefulWidget {
@@ -34,6 +36,11 @@ class VisualizacaoEmpresaPageState
   @override
   void initState() {
     super.initState();
+  }
+
+  String formatarChavePix(String chave) {
+    if (chave.length <= 8) return chave;
+    return '${chave.substring(0, 5)}****${chave.substring(chave.length - 4)}';
   }
 
   @override
@@ -72,29 +79,90 @@ class VisualizacaoEmpresaPageState
   }
 
   Widget cabecalho() {
-    return Column(
-      children: [
-        Text(
-          empresa.nomeFantasia,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Row(
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.grey, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            const Icon(FontAwesomeIcons.circleInfo, color: Colors.blue),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                empresa.descricao,
-                style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.justify,
+            Text(
+              empresa.nomeFantasia,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(FontAwesomeIcons.circleInfo, color: Colors.blue),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    empresa.descricao,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(FontAwesomeIcons.listOl, color: Colors.teal),
+                const SizedBox(width: 8),
+                const Text(
+                  'Mínimo para encomenda: ',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Text('${empresa.quantidadeMinimaEncomenda} itens',
+                    style: const TextStyle(fontSize: 16)),
+              ],
+            ),
+            const SizedBox(height: 15),
+            SizedBox(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(FontAwesomeIcons.key, color: Colors.green),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Chave PIX: ',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Expanded(
+                        child: Text(
+                          formatarChavePix(empresa.chavePix),
+                          style: const TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(FontAwesomeIcons.copy, size: 15),
+                        tooltip: 'Copiar chave PIX',
+                        onPressed: () {
+                          Clipboard.setData(
+                              ClipboardData(text: empresa.chavePix));
+                          WidgetUtils.showSnackbar(
+                              mensagem: 'Chave copiada!',
+                              context: context,
+                              erro: false);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 
@@ -380,9 +448,22 @@ class VisualizacaoEmpresaPageState
 
   AlertDialog dialogoFavoritarEmpresa(BuildContext context) {
     return AlertDialog(
-      title: const Icon(FontAwesomeIcons.heartCircleExclamation,
-          color: Colors.red, size: 50),
-      content: const Text("Deseja favoritar esta empresa?"),
+      title: const Icon(FontAwesomeIcons.star, color: Colors.yellow, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Favoritar Empresa",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Deseja favoritar esta empresa?",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -406,19 +487,15 @@ class VisualizacaoEmpresaPageState
             if (!context.mounted) return;
 
             if (existe) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 2),
-                    content: Text("Empresa já foi favoritada anteriormente.")),
-              );
+              WidgetUtils.showSnackbar(
+                  mensagem: 'Empresa já foi favoritada anteriormente.',
+                  context: context,
+                  erro: true);
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
-                    content: Text("Empresa favoritada com sucesso.")),
-              );
+              WidgetUtils.showSnackbar(
+                  mensagem: 'Empresa favoritada com sucesso!',
+                  context: context,
+                  erro: false);
 
               await ref
                   .read(dadosEmpresaControllerProvider.notifier)

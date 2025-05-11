@@ -7,7 +7,7 @@ class Empresa {
   final String nomeFantasia;
   final String chavePix;
   final String descricao;
-  final String logomarca;
+  final int quantidadeMinimaEncomenda;
   final List<LocalEntrega> locaisEntrega;
   final Timestamp dataCadastro;
   final Timestamp dataUltimaAlteracao;
@@ -18,7 +18,7 @@ class Empresa {
       required this.usuarioId,
       required this.chavePix,
       required this.descricao,
-      required this.logomarca,
+      required this.quantidadeMinimaEncomenda,
       required this.locaisEntrega,
       required this.dataCadastro,
       required this.dataUltimaAlteracao});
@@ -29,7 +29,7 @@ class Empresa {
       usuarioId: usuarioId,
       chavePix: '',
       descricao: '',
-      logomarca: '',
+      quantidadeMinimaEncomenda: 0,
       locaisEntrega: [],
       dataCadastro: Timestamp.now(),
       dataUltimaAlteracao: Timestamp.now(),
@@ -44,7 +44,7 @@ class Empresa {
       usuarioId: data['usuarioId'] ?? '',
       chavePix: data['chavePix'] ?? '',
       descricao: data['descricao'] ?? '',
-      logomarca: data['logomarca'],
+      quantidadeMinimaEncomenda: data['quantidadeMinimaEncomenda'] ?? 0,
       locaisEntrega: (data['locaisEntrega'] as List<dynamic>?)
               ?.map((e) => LocalEntrega.fromMap(e))
               .toList() ??
@@ -60,7 +60,7 @@ class Empresa {
       'usuarioId': usuarioId,
       'chavePix': chavePix,
       'descricao': descricao,
-      'logomarca': logomarca,
+      'quantidadeMinimaEncomenda': quantidadeMinimaEncomenda,
       'locaisEntrega': locaisEntrega.map((local) => local.toMap()).toList(),
       'dataCadastro': dataCadastro,
       'dataUltimaAlteracao': dataUltimaAlteracao,
@@ -73,7 +73,7 @@ class Empresa {
     String? nomeFantasia,
     String? chavePix,
     String? descricao,
-    String? logomarca,
+    int? quantidadeMinimaEncomenda,
     List<LocalEntrega>? locaisEntrega,
     Timestamp? dataCadastro,
     Timestamp? dataUltimaAlteracao,
@@ -84,7 +84,8 @@ class Empresa {
       nomeFantasia: nomeFantasia ?? this.nomeFantasia,
       chavePix: chavePix ?? this.chavePix,
       descricao: descricao ?? this.descricao,
-      logomarca: logomarca ?? this.logomarca,
+      quantidadeMinimaEncomenda:
+          quantidadeMinimaEncomenda ?? this.quantidadeMinimaEncomenda,
       locaisEntrega: locaisEntrega ?? this.locaisEntrega,
       dataCadastro: dataCadastro ?? this.dataCadastro,
       dataUltimaAlteracao: dataUltimaAlteracao ?? this.dataUltimaAlteracao,

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
-import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
+import 'package:pegue_o_doce/empresa/views/perfil_empresa.dart';
 import 'package:pegue_o_doce/menu/controllers/menu_lateral_controller.dart';
 import 'package:pegue_o_doce/menu/views/configuracao_page.dart';
 import 'package:pegue_o_doce/menu/views/empresa_favorita_page.dart';
-import 'package:pegue_o_doce/pedido/views/carrinho_page.dart';
 import 'package:pegue_o_doce/pedido/views/historico_pedido_page.dart';
 import 'package:pegue_o_doce/pergunta/views/perguntas_frequentes_page.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
@@ -109,7 +108,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
                   onTap: () {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (context) =>
-                          DadosEmpresaPage(empresa: snapshot.data!),
+                          PerfilEmpresaPage(empresa: snapshot.data!),
                     ));
                   },
                 );
@@ -135,17 +134,6 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const EmpresaFavoritaPage(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(FontAwesomeIcons.cartShopping),
-            title: const Text("Carrinho"),
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const CarrinhoPage(),
                 ),
               );
             },

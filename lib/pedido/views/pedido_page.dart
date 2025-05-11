@@ -4,7 +4,6 @@ import 'package:flutter_cart/model/cart_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
-import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
 import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/views/carrinho_page.dart';
@@ -124,7 +123,7 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Tema.padrao("Pedido - ${empresa.nomeFantasia}"),
+      appBar: Tema.padrao("Realizar Pedido"),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Center(
@@ -146,7 +145,7 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                       Expanded(
                         child: Text(
                           'Selecione quantas unidades desejar e clique em "Adicionar ao Carrinho". '
-                          'Você pode navegar por várias categorias; o carrinho mantém tudo aqui.',
+                          'Você pode navegar por várias páginas do aplicativo; o carrinho mantém tudo aqui.',
                         ),
                       ),
                     ],
@@ -218,7 +217,6 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
           ),
         ),
       ),
-      drawer: const MenuLateralWidget(),
     );
   }
 
@@ -313,7 +311,7 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: cols,
-        childAspectRatio: 3 / 2,
+        childAspectRatio: 1.2,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),
@@ -333,7 +331,7 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(p.sabor,
+                Text("${p.tipo} sabor - ${p.sabor}",
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(FormatadorMoedaReal.formatarValorReal(p.valorUnitario)),
                 const Spacer(),

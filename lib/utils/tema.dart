@@ -194,6 +194,9 @@ class Tema {
         fit: BoxFit.cover,
         height: 90,
       ),
+      actions: const [
+        CarrinhoBadgeWidget(),
+      ],
     );
   }
 

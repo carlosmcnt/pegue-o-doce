@@ -7,6 +7,7 @@ import 'package:pegue_o_doce/pedido/controllers/encomenda_controller.dart';
 import 'package:pegue_o_doce/pedido/models/item_pedido.dart';
 import 'package:pegue_o_doce/pedido/models/pedido.dart';
 import 'package:pegue_o_doce/pedido/models/status_pedido.dart';
+import 'package:pegue_o_doce/pedido/views/historico_pedido_page.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/usuario/models/usuario.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
@@ -73,46 +74,57 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
   Future<void> enviarEncomenda(
       List<ItemPedido> itens, BuildContext context) async {
-    if (!_formKey.currentState!.validate()) {
-      Navigator.pop(context);
-      return;
-    }
+    WidgetUtils.showLoadingDialog(context, mensagem: "Enviando encomenda...");
 
-    Usuario usuarioVendedor = await ref
-        .read(encomendaControllerProvider.notifier)
-        .obterUsuarioPorId(empresa.usuarioId);
-
-    final pedido = Pedido(
-      usuarioClienteId: await ref
+    try {
+      Usuario usuarioVendedor = await ref
           .read(encomendaControllerProvider.notifier)
-          .obterIdUsuarioLogado(),
-      usuarioVendedorId: empresa.usuarioId,
-      itensPedido: itens,
-      status: StatusPedido.FINALIZADO.nome,
-      dataPedido: Timestamp.now(),
-      valorTotal: valorTotal,
-      observacao: _observacaoController.text,
-      localRetirada: localEntregaSelecionado!,
-      isEncomenda: true,
-      dataUltimaAlteracao: Timestamp.now(),
-      motivoCancelamento: null,
-    );
+          .obterUsuarioPorId(empresa.usuarioId);
 
-    await ref.read(encomendaControllerProvider.notifier).inserirPedido(pedido);
+      final pedido = Pedido(
+        usuarioClienteId: await ref
+            .read(encomendaControllerProvider.notifier)
+            .obterIdUsuarioLogado(),
+        usuarioVendedorId: empresa.usuarioId,
+        itensPedido: itens,
+        status: StatusPedido.PENDENTE.nome,
+        dataPedido: Timestamp.now(),
+        valorTotal: valorTotal,
+        observacao: _observacaoController.text,
+        localRetirada: localEntregaSelecionado!,
+        isEncomenda: true,
+        dataUltimaAlteracao: Timestamp.now(),
+        motivoCancelamento: null,
+      );
 
-    NotificacaoUtils.enviarNotificacaoPush(token: usuarioVendedor.token!);
+      await ref
+          .read(encomendaControllerProvider.notifier)
+          .inserirPedido(pedido);
 
-    if (!context.mounted) return;
+      NotificacaoUtils.enviarNotificacaoPush(token: usuarioVendedor.token!);
 
-    Navigator.pop(context);
+      if (!context.mounted) return;
 
-    WidgetUtils.showSnackbar(
-      mensagem: 'Encomenda enviada com sucesso!',
-      context: context,
-      erro: false,
-    );
+      WidgetUtils.showSnackbar(
+        mensagem: 'Encomenda enviada com sucesso!',
+        context: context,
+        erro: false,
+      );
 
-    limparCampos();
+      limparCampos();
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (context) =>
+                const HistoricoPedidoPage(isHistoricoEmpresa: false)),
+      );
+    } on Exception catch (e) {
+      WidgetUtils.showSnackbar(
+        mensagem: 'Erro ao enviar encomenda: ${e.toString()}',
+        context: context,
+        erro: true,
+      );
+    }
   }
 
   @override
@@ -131,7 +143,8 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool podeEnviar = quantidadeTotal >= 10 && valorTotal > 0;
+    final bool podeEnviar =
+        quantidadeTotal >= empresa.quantidadeMinimaEncomenda && valorTotal > 0;
 
     return Scaffold(
       appBar: Tema.padrao("Realizar Encomenda"),
@@ -146,7 +159,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                   WidgetUtils.textoInformacao(
                       'Selecione o tipo de produto, a quantidade e o local de retirada para realizar a encomenda. O pagamento será feito na retirada.'),
                   const SizedBox(height: 5),
-                  if (quantidadeTotal < 10)
+                  if (quantidadeTotal < empresa.quantidadeMinimaEncomenda)
                     Container(
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 12),
@@ -160,7 +173,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'É necessário selecionar no mínimo 10 unidades para realizar a encomenda.',
+                              'É necessário selecionar no mínimo ${empresa.quantidadeMinimaEncomenda} unidades para realizar a encomenda.',
                               style: TextStyle(color: Colors.orange.shade900),
                             ),
                           ),
@@ -285,10 +298,29 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                             ElevatedButton.icon(
                               onPressed: podeEnviar
                                   ? () {
+                                      if (localEntregaSelecionado == null) {
+                                        WidgetUtils.showSnackbar(
+                                          mensagem:
+                                              "Selecione um local de retirada.",
+                                          context: context,
+                                          erro: true,
+                                        );
+                                        return;
+                                      }
+                                      if (!_formKey.currentState!.validate()) {
+                                        WidgetUtils.showSnackbar(
+                                          mensagem:
+                                              "Preencha todos os campos para finalizar a encomenda.",
+                                          context: context,
+                                          erro: true,
+                                        );
+                                        return;
+                                      }
+
                                       showDialog(
                                         context: context,
                                         builder: (context) =>
-                                            dialogoConfirmacao(context),
+                                            dialogoEnviarEncomenda(context),
                                       );
                                     }
                                   : null,
@@ -318,6 +350,39 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
           ),
         ),
       ),
+    );
+  }
+
+  AlertDialog dialogoEnviarEncomenda(BuildContext context) {
+    return AlertDialog(
+      title: const Icon(FontAwesomeIcons.check, color: Colors.green, size: 40),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Enviar Encomenda",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Deseja realmente enviar a encomenda? \n Esta ação não poderá ser desfeita.",
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 5),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () {
+            enviarEncomenda(itensSelecionados, context);
+          },
+          child: const Text('Confirmar'),
+        ),
+      ],
     );
   }
 
@@ -427,26 +492,6 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
           );
         }
       },
-    );
-  }
-
-  AlertDialog dialogoConfirmacao(BuildContext context) {
-    return AlertDialog(
-      title: const Icon(FontAwesomeIcons.circleQuestion,
-          color: Color.fromARGB(255, 190, 173, 19)),
-      content: const Text('Deseja confirmar o envio da encomenda?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () {
-            enviarEncomenda(itensSelecionados, context);
-          },
-          child: const Text('Confirmar'),
-        ),
-      ],
     );
   }
 }

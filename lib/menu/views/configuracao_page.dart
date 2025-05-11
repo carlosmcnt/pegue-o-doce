@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/empresa/models/empresa.dart';
-import 'package:pegue_o_doce/empresa/views/dados_empresa.dart';
+import 'package:pegue_o_doce/empresa/views/perfil_empresa.dart';
 import 'package:pegue_o_doce/empresa/views/empresa_edit_page.dart';
 import 'package:pegue_o_doce/menu/controllers/menu_lateral_controller.dart';
 import 'package:pegue_o_doce/menu/views/menu_lateral.dart';
@@ -182,7 +182,7 @@ class ConfiguracaoPageState extends ConsumerState<ConfiguracaoPage> {
                               onPressed: () {
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
-                                    builder: (context) => DadosEmpresaPage(
+                                    builder: (context) => PerfilEmpresaPage(
                                         empresa: snapshot.data!),
                                   ),
                                 );
