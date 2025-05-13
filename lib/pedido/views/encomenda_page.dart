@@ -184,18 +184,19 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                     children: [
                       Flexible(
                         child: RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             children: [
-                              WidgetSpan(
+                              const WidgetSpan(
                                   child: Icon(FontAwesomeIcons.clipboardList)),
-                              WidgetSpan(child: SizedBox(width: 8)),
+                              const WidgetSpan(child: SizedBox(width: 8)),
                               TextSpan(
-                                text: 'Tipo do produto:',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                ),
-                              ),
+                                  text: 'Tipo do produto:',
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),

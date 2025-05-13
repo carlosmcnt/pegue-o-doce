@@ -38,6 +38,11 @@ class VisualizacaoEmpresaPageState
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   String formatarChavePix(String chave) {
     if (chave.length <= 8) return chave;
     return '${chave.substring(0, 5)}****${chave.substring(chave.length - 4)}';
@@ -62,6 +67,8 @@ class VisualizacaoEmpresaPageState
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
+              WidgetUtils.textoInformacao(
+                  'Aqui você pode visualizar os detalhes da empresa, produtos disponíveis, locais de entrega e realizar ações como fazer um pedido ou encomenda.'),
               cabecalho(),
               const SizedBox(height: 24),
               secaoAcoes(context),
@@ -236,8 +243,10 @@ class VisualizacaoEmpresaPageState
   }) {
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon),
-      label: Text(label),
+      icon: Icon(icon, color: Theme.of(context).textTheme.bodyLarge?.color),
+      label: Text(label,
+          style:
+              TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
       style: ElevatedButton.styleFrom(backgroundColor: color),
     );
   }
@@ -543,13 +552,14 @@ class VisualizacaoEmpresaPageState
       child: RichText(
         text: TextSpan(
           text: '$titulo: ',
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Theme.of(context).textTheme.bodyLarge?.color),
           children: [
             TextSpan(
               text: valor,
-              style: const TextStyle(
-                  fontWeight: FontWeight.normal, color: Colors.black87),
+              style: const TextStyle(fontWeight: FontWeight.normal),
             )
           ],
         ),

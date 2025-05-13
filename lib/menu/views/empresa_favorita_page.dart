@@ -94,7 +94,7 @@ class EmpresaFavoritaPageState extends ConsumerState<EmpresaFavoritaPage> {
             textAlign: TextAlign.center,
             'Nenhuma empresa favorita encontrada',
             style: TextStyle(
-              fontSize: 30,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),

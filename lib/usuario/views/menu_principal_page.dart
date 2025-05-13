@@ -149,7 +149,7 @@ class MenuPrincipalWidgetState extends ConsumerState<MenuPrincipalPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           '${categoriasEmExibicao.length} resultado(s) para "$textoPesquisa"',
-          style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+          style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor),
         ),
       ),
     );

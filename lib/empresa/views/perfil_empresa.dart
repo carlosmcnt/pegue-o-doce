@@ -142,8 +142,6 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
         child: Column(
           children: [
             Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
               elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -185,7 +183,9 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
                         spacing: 8,
                         children: empresa.locaisEntrega
                             .map<Widget>((local) => Chip(
-                                label: Text(local.nome),
+                                label: Text(local.nome,
+                                    style:
+                                        const TextStyle(color: Colors.black)),
                                 backgroundColor: Colors.blue[50]))
                             .toList(),
                       ),
@@ -246,10 +246,7 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
             ...produtosAgrupados.entries.map((entry) {
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
                 elevation: 4,
-                shadowColor: Colors.black,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -269,7 +266,8 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
                               FormatadorMoedaReal.formatarValorReal(
                                   produto.valorUnitario),
                               style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[700])),
+                                  fontSize: 16,
+                                  color: Theme.of(context).primaryColor)),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -290,7 +288,8 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
                               ),
                               IconButton(
                                 tooltip: 'Excluir Produto',
-                                icon: const Icon(FontAwesomeIcons.trashCan),
+                                icon: const Icon(FontAwesomeIcons.trashCan,
+                                    color: Colors.red),
                                 onPressed: () {
                                   deletarProduto(produto);
                                 },
@@ -321,8 +320,6 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
       onTap: onTap,
       child: Card(
         color: color.withValues(),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 4,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(12),

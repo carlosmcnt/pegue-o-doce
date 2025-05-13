@@ -95,7 +95,6 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black54,
                               ),
                             ),
                             const SizedBox(height: 5),
@@ -215,7 +214,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
           children: [
             Row(
               children: [
-                const Icon(FontAwesomeIcons.hashtag, color: Colors.black54),
+                const Icon(FontAwesomeIcons.hashtag, color: Colors.blueGrey),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -243,8 +242,9 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               ],
             ),
             const SizedBox(height: 8),
-            const Text("Valor a ser pago:",
-                style: TextStyle(color: Colors.black54)),
+            const Text(
+              "Valor a ser pago:",
+            ),
             Text(
               FormatadorMoedaReal.formatarValorReal(pedido.valorTotal),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

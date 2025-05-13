@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:pegue_o_doce/pedido/views/carrinho_badge_page.dart';
 
-// Definição de paletas de cores
 class Cores {
-  // Paleta de cores para o modo claro
-  static const Color primaryLight = Color(0xFFD50000);
-  static const Color accentLight = Color(0xFFFF1744);
+  static const Color primaryLight = Color(0xFFE3242B);
+  static const Color accentLight = Color(0xFFBC544B);
   static const Color backgroundLight = Color.fromARGB(255, 250, 250, 250);
   static const Color textPrimaryLight = Color(0xFF4E342E);
-  static const Color textSecondaryLight = Color(0xFFFF5252);
+  static const Color textSecondaryLight = Color(0xFF7B5E57);
   static const Color shadowLight = Color.fromARGB(255, 198, 74, 74);
   static const Color inputBackgroundLight = Colors.white;
 
-  // Paleta de cores para o modo escuro
-  static const Color primaryDark = Color(0xFFFFC107);
-  static const Color accentDark = Colors.red;
-  static const Color backgroundDark = Color(0xFF303030);
-  static const Color textPrimaryDark = Colors.white70;
-  static const Color textSecondaryDark = Colors.white60;
-  static const Color shadowDark = Color(0xFF000000);
-  static const Color inputBackgroundDark = Color(0xFF616161);
+  static const Color primaryDark = Colors.blueGrey;
+  static const Color accentDark = Colors.blueGrey;
+  static const Color backgroundDark = Color(0xFF212121);
+  static const Color textPrimaryDark = Colors.white;
+  static const Color textSecondaryDark = Color(0xFFBDBDBD);
+  static const Color shadowDark = Colors.blueGrey;
+  static const Color inputBackgroundDark = Color(0xFF424242);
 }
 
-// Função para criar temas com base nas cores
 class Tema {
   static ThemeData lightTheme = _buildTheme(
     primaryColor: Cores.primaryLight,
@@ -61,6 +57,8 @@ class Tema {
       hintColor: accentColor,
       scaffoldBackgroundColor: backgroundColor,
       textTheme: TextTheme(
+        labelSmall: TextStyle(color: textPrimaryColor),
+        labelMedium: TextStyle(color: textPrimaryColor),
         bodyLarge: TextStyle(color: textPrimaryColor),
         bodyMedium: TextStyle(color: textPrimaryColor),
         labelLarge:
@@ -107,6 +105,12 @@ class Tema {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
+          textStyle: WidgetStateProperty.all(
+            TextStyle(
+              color: primaryColor,
+              fontSize: 16,
+            ),
+          ),
           backgroundColor: WidgetStateProperty.all(accentColor),
           foregroundColor: WidgetStateProperty.all(backgroundColor),
           iconColor: WidgetStateProperty.all(backgroundColor),
@@ -149,12 +153,31 @@ class Tema {
       cardTheme: CardTheme(
         color: backgroundColor,
         elevation: 4,
+        shadowColor: shadowColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(
             width: 1,
             style: BorderStyle.solid,
+            color: Colors.grey,
           ),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Colors.grey,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: backgroundColor,
+        selectedColor: accentColor,
+        secondarySelectedColor: accentColor,
+        disabledColor: textSecondaryColor,
+        labelStyle: TextStyle(
+          color: textSecondaryColor,
+          fontSize: 16,
+        ),
+        secondaryLabelStyle: TextStyle(
+          color: textPrimaryColor,
+          fontSize: 16,
         ),
       ),
       dataTableTheme: DataTableThemeData(

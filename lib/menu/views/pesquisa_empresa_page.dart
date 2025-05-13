@@ -188,15 +188,14 @@ class PesquisaEmpresaPageState extends ConsumerState<PesquisaEmpresaPage> {
           alignment: Alignment.centerLeft,
           child: Text(
             '$count resultado(s)',
-            style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+            style:
+                TextStyle(fontSize: 14, color: Theme.of(context).primaryColor),
           ),
         ),
       );
 
   Widget retornarCardEmpresa(Empresa e) => Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () => Navigator.of(context).push(

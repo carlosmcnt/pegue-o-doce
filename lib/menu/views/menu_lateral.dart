@@ -43,7 +43,7 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: ListView(
         padding: EdgeInsets.zero,
-        children: <Widget>[
+        children: [
           UserAccountsDrawerHeader(
             decoration: BoxDecoration(
               color: Theme.of(context).hintColor,
@@ -51,14 +51,14 @@ class MenuLateralWidgetState extends ConsumerState<MenuLateralWidget> {
             accountName: SizedBox(
               child: Text(
                 usuario?.nomeCompleto ?? '',
-                style: const TextStyle(fontSize: 18, color: Colors.white),
+                style: const TextStyle(fontSize: 16, color: Colors.white),
                 softWrap: true,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 2,
               ),
             ),
             accountEmail: Text(usuario?.email ?? '',
-                style: const TextStyle(fontSize: 15, color: Colors.white)),
+                style: const TextStyle(fontSize: 13, color: Colors.white)),
             currentAccountPictureSize: const Size.square(60),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Theme.of(context).focusColor,

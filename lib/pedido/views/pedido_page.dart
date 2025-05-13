@@ -10,6 +10,7 @@ import 'package:pegue_o_doce/pedido/views/carrinho_page.dart';
 import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class PedidoPage extends ConsumerStatefulWidget {
   final Empresa empresa;
@@ -138,18 +139,9 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                     color: Colors.blue.shade100,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Selecione quantas unidades desejar e clique em "Adicionar ao Carrinho". '
-                          'Você pode navegar por várias páginas do aplicativo; o carrinho mantém tudo aqui.',
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: WidgetUtils.textoInformacao(
+                      'Selecione quantas unidades desejar e clique em "Adicionar ao Carrinho". '
+                      'Você pode navegar por várias páginas do aplicativo; o carrinho mantém tudo aqui.'),
                 ),
                 const SizedBox(height: 16),
                 Expanded(
@@ -185,7 +177,12 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                   children: [
                     ElevatedButton.icon(
                       icon: const Icon(Icons.add_shopping_cart),
-                      label: const Text("Adicionar ao Carrinho"),
+                      label: Text("Adicionar ao Carrinho",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.color)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
@@ -200,7 +197,12 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                     const SizedBox(width: 16, height: 16),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.check),
-                      label: const Text("Limpar Selecionados"),
+                      label: Text("Limpar Selecionados",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.color)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                       ),
@@ -324,7 +326,6 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                     ItemPedido(id: null, produtoId: p.id, quantidade: 0))
             .quantidade;
         return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(8),
