@@ -61,8 +61,6 @@ class NotificacaoUtils {
         .read(usuarioServiceProvider)
         .obterUsuarioPorId(usuarioClienteId);
 
-    print(usuario.token);
-
     String tituloNotificacao;
     String mensagemNotificacao;
 

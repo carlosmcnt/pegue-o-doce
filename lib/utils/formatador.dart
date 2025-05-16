@@ -53,7 +53,7 @@ class FormatadorMoedaReal extends TextInputFormatter {
     );
   }
 
-  static String formatarValorReal(double valor) {
+  static String formatarValorReal(num valor) {
     return "R\$ ${NumberFormat.currency(locale: 'pt_BR', symbol: '').format(valor)}";
   }
 }

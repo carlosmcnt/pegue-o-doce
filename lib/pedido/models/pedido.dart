@@ -8,7 +8,7 @@ class Pedido {
   final List<ItemPedido> itensPedido;
   final String status;
   final Timestamp dataPedido;
-  final double valorTotal;
+  final num valorTotal;
   final String observacao;
   String? motivoCancelamento;
   final String localRetirada;

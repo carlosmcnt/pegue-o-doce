@@ -31,6 +31,7 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
   bool isOrdenacaoDecrescente = true;
   int registrosPorPagina = 5;
   int paginaAtual = 1;
+  late AsyncValue<List<Pedido>> pedidosAsync;
   final TextEditingController _motivoCancelamentoController =
       TextEditingController();
 
@@ -39,14 +40,32 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
     super.initState();
     initializeDateFormatting();
     listaStatus = StatusPedido.values.map((status) => status.nome).toList();
+    carregarPedidos();
+  }
+
+  Future<void> carregarPedidos() async {
+    final isEmpresa = widget.isHistoricoEmpresa;
+    setState(() {
+      pedidosAsync = const AsyncValue.loading();
+    });
+
+    try {
+      final pedidos =
+          await ref.read(historicoPedidoControllerProvider(isEmpresa).future);
+      setState(() {
+        pedidosAsync = AsyncValue.data(pedidos);
+      });
+    } catch (e, stack) {
+      setState(() {
+        pedidosAsync = AsyncValue.error(e, stack);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final formatadorData = DateFormat('EEE, d MMMM yyyy', 'pt_BR');
 
-    final pedidosAsync =
-        ref.watch(historicoPedidoControllerProvider(widget.isHistoricoEmpresa));
     List<Pedido> listaPedidos = aplicarFiltros(pedidosAsync);
 
     return Scaffold(
