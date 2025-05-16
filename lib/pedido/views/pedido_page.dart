@@ -85,11 +85,10 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
         ),
       );
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Itens adicionados ao carrinho'),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.green),
+    WidgetUtils.showSnackbar(
+      mensagem: 'Item(s) adicionado(s) ao carrinho',
+      context: context,
+      erro: false,
     );
     sincronizarCarrinho();
     itensSelecionados.clear();

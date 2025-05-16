@@ -608,10 +608,10 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
                     context: context,
                     erro: false);
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Motivo de cancelamento obrigatório")),
-                );
+                WidgetUtils.showSnackbar(
+                    mensagem: "Campo motivo de cancelamento obrigatório",
+                    context: context,
+                    erro: true);
               }
             },
             child: const Text("Sim"),

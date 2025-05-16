@@ -8,7 +8,8 @@ class WidgetUtils {
       required bool erro}) {
     SnackBar snackbar = SnackBar(
       duration: const Duration(seconds: 3),
-      content: Text(mensagem),
+      content: Text(mensagem,
+          style: const TextStyle(fontSize: 16, color: Colors.white)),
       backgroundColor: erro ? Colors.red : Colors.green,
     );
     ScaffoldMessenger.of(context).showSnackBar(snackbar);

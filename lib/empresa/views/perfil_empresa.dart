@@ -11,6 +11,7 @@ import 'package:pegue_o_doce/produto/models/produto.dart';
 import 'package:pegue_o_doce/produto/views/produto_edit_page.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/tema.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class PerfilEmpresaPage extends ConsumerStatefulWidget {
   final Empresa empresa;
@@ -114,10 +115,10 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
                   .read(produtoListControllerProvider.notifier)
                   .deletarProduto(produto);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Produto excluído com sucesso!'),
-                ),
+              WidgetUtils.showSnackbar(
+                mensagem: 'Produto excluído com sucesso!',
+                context: context,
+                erro: false,
               );
 
               atualizarPagina();

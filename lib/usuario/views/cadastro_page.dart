@@ -6,6 +6,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:pegue_o_doce/usuario/controllers/usuario_controller.dart';
 import 'package:pegue_o_doce/utils/formatador.dart';
 import 'package:pegue_o_doce/utils/validador.dart';
+import 'package:pegue_o_doce/utils/widget_utils.dart';
 
 class CadastroPage extends ConsumerStatefulWidget {
   const CadastroPage({super.key});
@@ -62,10 +63,11 @@ class CadastroPageState extends ConsumerState<CadastroPage> {
 
     if (token == null) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Erro ao obter ID do dispositivo para notificações')),
-      );
+      WidgetUtils.showSnackbar(
+          context: context,
+          mensagem:
+              "Erro ao obter o token de notificação. Tente novamente mais tarde.",
+          erro: true);
       setState(() => desabilitarBotao = false);
       return;
     }
