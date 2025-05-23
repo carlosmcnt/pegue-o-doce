@@ -245,6 +245,7 @@ class CadastroPageState extends ConsumerState<CadastroPage> {
           controller: _senhaController,
           obscureText: !senhaVisivel,
           decoration: InputDecoration(
+            errorMaxLines: 2,
             labelText: "Senha:",
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),

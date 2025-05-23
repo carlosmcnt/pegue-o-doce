@@ -31,14 +31,18 @@ class EncomendaController extends _$EncomendaController {
     return [];
   }
 
-  Future<List<String>> obterTiposDeProduto() async {
-    final tipos = await ref.read(produtoServiceProvider).obterTiposDeProduto();
+  Future<List<String>> obterTiposDeProdutoPorEmpresa(String empresaId) async {
+    final tipos = await ref
+        .read(produtoServiceProvider)
+        .obterTiposDeProdutoPorEmpresa(empresaId);
     return tipos;
   }
 
-  Future<List<Produto>> obterProdutosPorTipo(String tipo) async {
-    final produtos =
-        await ref.read(produtoServiceProvider).obterProdutosPorTipo(tipo);
+  Future<List<Produto>> obterProdutosEmpresaPorTipo(
+      String tipo, String empresaId) async {
+    final produtos = await ref
+        .read(produtoServiceProvider)
+        .obterProdutosEmpresaPorTipo(tipo, empresaId);
     return produtos;
   }
 

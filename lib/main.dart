@@ -33,7 +33,7 @@ void main() async {
         home: Roteador(),
         theme: Tema.lightTheme,
         darkTheme: Tema.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         locale: const Locale.fromSubtags(languageCode: 'pt', countryCode: 'BR'),
       ),
     ),

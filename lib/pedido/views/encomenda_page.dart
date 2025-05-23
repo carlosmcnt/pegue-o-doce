@@ -66,10 +66,10 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
     });
   }
 
-  Future<void> listarProdutosPorTipo(String tipo) async {
+  Future<void> listarProdutosPorTipo(String tipo, String empresaId) async {
     produtos = await ref
         .read(encomendaControllerProvider.notifier)
-        .obterProdutosPorTipo(tipo);
+        .obterProdutosEmpresaPorTipo(tipo, empresaId);
   }
 
   Future<void> enviarEncomenda(
@@ -193,7 +193,9 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                                   text: 'Tipo do produto:',
                                   style: TextStyle(
                                       color: Theme.of(context)
-                                          .scaffoldBackgroundColor,
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color,
                                       fontWeight: FontWeight.bold)),
                             ],
                           ),
@@ -205,7 +207,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                   ),
                   const SizedBox(height: 16),
                   if (tipoSelecionado != null) carregarProdutosPorTipo(ref),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 30),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -387,8 +389,9 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
 
   Widget carregarTiposDeProduto(WidgetRef ref) {
     return FutureBuilder<List<String>>(
-      future:
-          ref.read(encomendaControllerProvider.notifier).obterTiposDeProduto(),
+      future: ref
+          .read(encomendaControllerProvider.notifier)
+          .obterTiposDeProdutoPorEmpresa(empresa.id!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
@@ -405,7 +408,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                 limparCampos();
               });
               if (novoTipo != null) {
-                listarProdutosPorTipo(novoTipo);
+                listarProdutosPorTipo(novoTipo, empresa.id!);
               }
             },
             dropdownMenuEntries: snapshot.data!
@@ -424,7 +427,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
     return FutureBuilder<List<Produto>>(
       future: ref
           .read(encomendaControllerProvider.notifier)
-          .obterProdutosPorTipo(tipoSelecionado!),
+          .obterProdutosEmpresaPorTipo(tipoSelecionado!, empresa.id!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();

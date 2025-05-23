@@ -11,7 +11,7 @@ class Validador {
 
   static bool validarSenhaForte(String senha) {
     String padrao =
-        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$';
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])[A-Za-z\d@$!%*?&]{8,}$';
     RegExp regex = RegExp(padrao);
     return (!regex.hasMatch(senha)) ? false : true;
   }

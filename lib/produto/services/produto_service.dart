@@ -38,12 +38,17 @@ class ProdutoService {
     return await produtoRepository.obterProdutosPorCategoria(categoriaId);
   }
 
-  Future<List<Produto>> obterProdutosPorTipo(String tipo) async {
-    return await produtoRepository.obterProdutosPorTipo(tipo);
+  Future<List<Produto>> obterProdutosEmpresaPorTipo(
+      String tipo, String empresaId) async {
+    return await produtoRepository.obterProdutosEmpresaPorTipo(tipo, empresaId);
   }
 
   Future<List<String>> obterTiposDeProduto() async {
     return await produtoRepository.obterTiposDeProduto();
+  }
+
+  Future<List<String>> obterTiposDeProdutoPorEmpresa(String empresaId) async {
+    return await produtoRepository.obterTiposDeProdutoPorEmpresa(empresaId);
   }
 }
 
