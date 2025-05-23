@@ -32,10 +32,14 @@ class VisualizacaoEmpresaPageState
     extends ConsumerState<VisualizacaoEmpresaPage> {
   Empresa get empresa => widget.empresa;
   String? telefoneContato;
+  late Future<List<Produto>> produtosFuture;
 
   @override
   void initState() {
     super.initState();
+    produtosFuture = ref
+        .read(dadosEmpresaControllerProvider.notifier)
+        .obterProdutosPorEmpresa(widget.empresa.id!);
   }
 
   @override
@@ -50,7 +54,6 @@ class VisualizacaoEmpresaPageState
 
   @override
   Widget build(BuildContext context) {
-    final listaProdutos = ref.watch(dadosEmpresaControllerProvider);
     ref
         .read(dadosEmpresaControllerProvider.notifier)
         .obterTelefoneContatoPorIdEmpresa(empresa.usuarioId)
@@ -74,7 +77,7 @@ class VisualizacaoEmpresaPageState
               secaoAcoes(context),
               const SizedBox(height: 24),
               const Divider(),
-              secaoProdutos(context, listaProdutos),
+              secaoProdutos(context, produtosFuture),
               const SizedBox(height: 24),
               const Divider(),
               secaoLocaisEntrega(),
@@ -243,16 +246,15 @@ class VisualizacaoEmpresaPageState
   }) {
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, color: Theme.of(context).textTheme.bodyLarge?.color),
+      icon: Icon(icon, color: Theme.of(context).scaffoldBackgroundColor),
       label: Text(label,
-          style:
-              TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+          style: TextStyle(color: Theme.of(context).scaffoldBackgroundColor)),
       style: ElevatedButton.styleFrom(backgroundColor: color),
     );
   }
 
   Widget secaoProdutos(
-      BuildContext context, AsyncValue<List<Produto>> listaProdutos) {
+      BuildContext context, Future<List<Produto>> listaProdutos) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -267,37 +269,50 @@ class VisualizacaoEmpresaPageState
           ],
         ),
         const SizedBox(height: 8),
-        listaProdutos.when(
-          data: (produtos) => Column(
-            children: produtos.map((produto) {
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: const Icon(FontAwesomeIcons.utensils,
-                      color: Colors.deepOrange),
-                  title: Text(produto.descricao),
-                  subtitle: Text(
-                    FormatadorMoedaReal.formatarValorReal(
-                        produto.valorUnitario),
-                    style: TextStyle(color: Colors.grey[700]),
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) =>
-                          dialogoExibirDadosProduto(context, produto),
-                    );
-                  },
-                ),
+        FutureBuilder<List<Produto>>(
+          future: listaProdutos,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Erro: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              final produtos = snapshot.data!;
+              if (produtos.isEmpty) {
+                return const Text('Nenhum produto cadastrado.');
+              }
+              return Column(
+                children: produtos.map((produto) {
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: const Icon(FontAwesomeIcons.utensils,
+                          color: Colors.deepOrange),
+                      title: Text(produto.descricao),
+                      subtitle: Text(
+                        FormatadorMoedaReal.formatarValorReal(
+                            produto.valorUnitario),
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) =>
+                              dialogoExibirDadosProduto(context, produto),
+                        );
+                      },
+                    ),
+                  );
+                }).toList(),
               );
-            }).toList(),
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(child: Text('Erro: $error')),
+            } else {
+              return const Text('Nenhum produto encontrado.');
+            }
+          },
         ),
       ],
     );
@@ -529,7 +544,7 @@ class VisualizacaoEmpresaPageState
         children: [
           padronizarTexto('Sabor', produto.sabor),
           padronizarTexto('Vegano', produto.vegano ? 'Sim' : 'Não'),
-          padronizarTexto('Contém Glúten', produto.temGlutem ? 'Sim' : 'Não'),
+          padronizarTexto('Contém Glúten', produto.temGluten ? 'Sim' : 'Não'),
           padronizarTexto('Contém Lactose', produto.temLactose ? 'Sim' : 'Não'),
           const SizedBox(height: 8),
           const Text('Alérgenos:',

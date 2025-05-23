@@ -73,11 +73,11 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
         await ref.read(usuarioServiceProvider).obterUsuarioLogado();
 
     final empresaNova = empresa.copyWith(
-      nomeFantasia: _nomeFantasiaController.text,
-      chavePix: _chavePixController.text,
+      nomeFantasia: _nomeFantasiaController.text.trim(),
+      chavePix: _chavePixController.text.trim(),
       quantidadeMinimaEncomenda:
           int.parse(_quantidadeMinimaEncomendaController.text),
-      descricao: _descricaoController.text,
+      descricao: _descricaoController.text.trim(),
       locaisEntrega: _locaisEntrega,
       usuarioId: usuarioLogado.id,
     );
@@ -112,7 +112,7 @@ class EmpresaEditPageState extends ConsumerState<EmpresaEditPage> {
     }
     setState(() {
       _locaisEntrega.add(LocalEntrega(
-        nome: _locaisEntregaController.text,
+        nome: _locaisEntregaController.text.trim(),
         coordenadas: coordenadas!,
       ));
       _locaisEntregaController.clear();

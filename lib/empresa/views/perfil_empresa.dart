@@ -115,6 +115,9 @@ class PerfilEmpresaPageState extends ConsumerState<PerfilEmpresaPage> {
                   .read(produtoListControllerProvider.notifier)
                   .deletarProduto(produto);
 
+              ref.invalidate(produtoListControllerProvider);
+              ref.invalidate(dadosEmpresaControllerProvider);
+
               WidgetUtils.showSnackbar(
                 mensagem: 'Produto excluído com sucesso!',
                 context: context,

@@ -3,6 +3,7 @@ import 'package:flutter_cart/cart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pegue_o_doce/menu/controllers/dados_usuario_controller.dart';
+import 'package:pegue_o_doce/menu/controllers/menu_lateral_controller.dart';
 import 'package:pegue_o_doce/pedido/controllers/historico_pedido_controller.dart';
 import 'package:pegue_o_doce/usuario/controllers/usuario_controller.dart';
 import 'package:pegue_o_doce/usuario/services/usuario_service.dart';
@@ -58,6 +59,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
       ref.invalidate(produtoListControllerProvider);
       ref.invalidate(historicoPedidoControllerProvider);
       ref.invalidate(dadosUsuarioControllerProvider);
+      ref.invalidate(menuLateralControllerProvider);
       carrinho.clearCart();
 
       Navigator.of(context).push(MaterialPageRoute(

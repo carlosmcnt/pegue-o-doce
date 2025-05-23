@@ -6,7 +6,7 @@ class Produto {
   final double valorUnitario;
   final String tipo;
   final String sabor;
-  final bool temGlutem;
+  final bool temGluten;
   final bool temLactose;
   final bool vegano;
   final List<String> alergenos;
@@ -21,7 +21,7 @@ class Produto {
       required this.valorUnitario,
       required this.tipo,
       required this.sabor,
-      this.temGlutem = false,
+      this.temGluten = false,
       this.temLactose = false,
       this.vegano = false,
       required this.alergenos,
@@ -37,7 +37,7 @@ class Produto {
       valorUnitario: 0.0,
       tipo: '',
       sabor: '',
-      temGlutem: false,
+      temGluten: false,
       temLactose: false,
       vegano: false,
       alergenos: [],
@@ -57,7 +57,7 @@ class Produto {
       tipo: data['tipo'] ?? '',
       sabor: data['sabor'] ?? '',
       dataCadastro: data['dataCadastro'],
-      temGlutem: data['temGlutem'] ?? false,
+      temGluten: data['temGluten'] ?? false,
       temLactose: data['temLactose'] ?? false,
       vegano: data['vegano'] ?? false,
       alergenos: List<String>.from(data['alergenos'] ?? []),
@@ -74,7 +74,7 @@ class Produto {
       'tipo': tipo,
       'sabor': sabor,
       'dataCadastro': dataCadastro,
-      'temGlutem': temGlutem,
+      'temGluten': temGluten,
       'temLactose': temLactose,
       'vegano': vegano,
       'alergenos': alergenos,
@@ -90,7 +90,7 @@ class Produto {
     double? valorUnitario,
     String? tipo,
     String? sabor,
-    bool? temGlutem,
+    bool? temGluten,
     bool? temLactose,
     bool? vegano,
     List<String>? alergenos,
@@ -105,7 +105,7 @@ class Produto {
       valorUnitario: valorUnitario ?? this.valorUnitario,
       tipo: tipo ?? this.tipo,
       sabor: sabor ?? this.sabor,
-      temGlutem: temGlutem ?? this.temGlutem,
+      temGluten: temGluten ?? this.temGluten,
       temLactose: temLactose ?? this.temLactose,
       vegano: vegano ?? this.vegano,
       alergenos: alergenos ?? this.alergenos,

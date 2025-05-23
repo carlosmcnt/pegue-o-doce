@@ -178,10 +178,8 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                       icon: const Icon(Icons.add_shopping_cart),
                       label: Text("Adicionar ao Carrinho",
                           style: TextStyle(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.color)),
+                              color:
+                                  Theme.of(context).scaffoldBackgroundColor)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
@@ -198,10 +196,8 @@ class PedidoPageState extends ConsumerState<PedidoPage> {
                       icon: const Icon(Icons.check),
                       label: Text("Limpar Selecionados",
                           style: TextStyle(
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.color)),
+                              color:
+                                  Theme.of(context).scaffoldBackgroundColor)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                       ),

@@ -36,6 +36,12 @@ class DadosEmpresaController extends _$DadosEmpresaController {
     }
   }
 
+  Future<List<Produto>> obterProdutosPorEmpresa(String idEmpresa) async {
+    final produtos =
+        await ref.read(produtoServiceProvider).getProdutosPorEmpresa(idEmpresa);
+    return produtos;
+  }
+
   Future<void> adicionarEmpresaFavorita(UsuarioEmpresa usuarioEmpresa) async {
     await ref.read(usuarioEmpresaServiceProvider).adicionar(usuarioEmpresa);
   }

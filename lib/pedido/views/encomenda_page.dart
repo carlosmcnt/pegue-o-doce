@@ -193,9 +193,7 @@ class EncomendaPageState extends ConsumerState<EncomendaPage> {
                                   text: 'Tipo do produto:',
                                   style: TextStyle(
                                       color: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.color,
+                                          .scaffoldBackgroundColor,
                                       fontWeight: FontWeight.bold)),
                             ],
                           ),

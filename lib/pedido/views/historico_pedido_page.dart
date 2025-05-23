@@ -87,15 +87,14 @@ class _HistoricoPedidoPageState extends ConsumerState<HistoricoPedidoPage> {
               child: pedidosAsync.when(
                 data: (lista) {
                   if (lista.isEmpty) {
-                    return const Center(
-                        child: Text(
+                    return const Text(
                       "Nenhum pedido encontrado",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 30,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
-                    ));
+                    );
                   }
                   return ListView.builder(
                     shrinkWrap: true,

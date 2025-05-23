@@ -35,7 +35,7 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _temLactose = false;
-  bool _temGlutem = false;
+  bool _temGluten = false;
   bool _vegano = false;
   Produto get produto => widget.produto;
 
@@ -70,7 +70,7 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
     _saborController = TextEditingController(text: produto.sabor);
     _alergenosController = TextEditingController();
     _temLactose = produto.temLactose;
-    _temGlutem = produto.temGlutem;
+    _temGluten = produto.temGluten;
     _vegano = produto.vegano;
     _alergenos = List<String>.from(produto.alergenos);
   }
@@ -204,6 +204,7 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: _saborController,
+                textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   labelText: 'Sabor do produto:',
                   hintText: 'Ex: Chocolate, Morango, Ninho',
@@ -225,13 +226,13 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
                   children: [
                     Icon(FontAwesomeIcons.breadSlice),
                     SizedBox(width: 10),
-                    Text('Contém glútem?'),
+                    Text('Contém glúten?'),
                   ],
                 ),
-                value: _temGlutem,
+                value: _temGluten,
                 onChanged: (value) {
                   setState(() {
-                    _temGlutem = value;
+                    _temGluten = value;
                   });
                 },
               ),
@@ -329,12 +330,12 @@ class ProdutoEditPageState extends ConsumerState<ProdutoEditPage> {
                   }
 
                   final novoProduto = produto.copyWith(
-                    descricao: _descricaoController.text,
+                    descricao: _descricaoController.text.trim(),
                     valorUnitario:
                         NormalizadorMoeda.normalizar(_valorController.text),
-                    tipo: _tipoController.text,
-                    sabor: _saborController.text,
-                    temGlutem: _temGlutem,
+                    tipo: _tipoController.text.trim(),
+                    sabor: _saborController.text.trim(),
+                    temGluten: _temGluten,
                     temLactose: _temLactose,
                     vegano: _vegano,
                     alergenos: _alergenos,
